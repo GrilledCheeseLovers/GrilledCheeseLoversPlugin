@@ -9,5 +9,7 @@ class GrilledCheeseLoversPlugin : JavaPlugin() {
         this.server.pluginManager.registerEvents(PlayerListeners(), this)
     }
 
+    override fun onDisable() {
+    }
 
 }
