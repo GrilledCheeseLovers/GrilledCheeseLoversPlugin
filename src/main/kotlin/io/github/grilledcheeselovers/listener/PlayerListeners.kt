@@ -6,6 +6,7 @@ import io.github.grilledcheeselovers.constant.sendCoordinateActionBar
 import io.github.grilledcheeselovers.extension.relative
 import io.github.grilledcheeselovers.item.MAGIC_FISH_ITEM
 import io.github.grilledcheeselovers.trading.getWanderingTraderTrades
+import io.github.grilledcheeselovers.user.DeathScoreboard
 import io.github.grilledcheeselovers.user.UserManager
 import io.github.grilledcheeselovers.util.getCoordinatesColor
 import io.github.grilledcheeselovers.util.getPotionBiome
@@ -52,13 +53,15 @@ private val BLOCK_FACE_TO_CHEST_DIRECTION = mapOf(
 private const val SINGLE_CHEST_SIZE = 27
 
 class PlayerListeners(
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val deathScoreboard: DeathScoreboard
 ) : Listener {
 
     @EventHandler
     private fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
         getCoordinatesColor(player)?.apply { userManager.createUser(player.uniqueId, this) }
+        this.deathScoreboard.sendScoreboard(player)
         if (player.hasPlayedBefore()) return
         giveFish(player)
     }
@@ -234,7 +237,8 @@ class PlayerListeners(
 
     @EventHandler
     private fun onPlayerChat(event: AsyncChatEvent) {
-        event.renderer { _, _, message, _ -> getSafeMessage(message) }
+        event.renderer { _, displayName, message, _ ->
+            getSafeMessage(displayName.append(Component.text(": ")).append(message)) }
     }
 
     @EventHandler

@@ -3,9 +3,8 @@ package io.github.grilledcheeselovers.user
 import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
 import io.github.grilledcheeselovers.constant.sendCoordinateActionBar
 import org.bukkit.Bukkit
-import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
-import java.util.*
+import java.util.UUID
 
 class UserManager(
     private val plugin: GrilledCheeseLoversPlugin,
