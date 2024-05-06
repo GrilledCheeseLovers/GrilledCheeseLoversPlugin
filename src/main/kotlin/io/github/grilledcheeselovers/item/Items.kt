@@ -3,7 +3,6 @@ package io.github.grilledcheeselovers.item
 import io.github.grilledcheeselovers.constant.MAGIC_FISH_NAME
 import io.github.grilledcheeselovers.constant.MINI_MESSAGE
 import io.github.grilledcheeselovers.util.setBiomePotion
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Biome
 import org.bukkit.enchantments.Enchantment

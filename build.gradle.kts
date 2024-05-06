@@ -63,4 +63,11 @@ bukkit {
 
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
     prefix = "GrilledCheeseLovers"
+
+    commands {
+        register("grilledcheese") {
+            description = "Grilled Cheese Command"
+            aliases = listOf("gc")
+        }
+    }
 }

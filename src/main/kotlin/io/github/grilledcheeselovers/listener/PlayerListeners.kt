@@ -1,12 +1,20 @@
 package io.github.grilledcheeselovers.listener
 
 import io.github.grilledcheeselovers.constant.MINI_MESSAGE
+import io.github.grilledcheeselovers.constant.getSafeMessage
+import io.github.grilledcheeselovers.constant.sendCoordinateActionBar
 import io.github.grilledcheeselovers.extension.relative
 import io.github.grilledcheeselovers.item.MAGIC_FISH_ITEM
 import io.github.grilledcheeselovers.trading.getWanderingTraderTrades
+import io.github.grilledcheeselovers.user.UserManager
+import io.github.grilledcheeselovers.util.getCoordinatesColor
 import io.github.grilledcheeselovers.util.getPotionBiome
 import io.github.grilledcheeselovers.util.isDeathChest
 import io.github.grilledcheeselovers.util.setDeathChest
+import io.papermc.paper.chat.ChatRenderer
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -14,8 +22,6 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.Chest
 import org.bukkit.entity.Player
-import org.bukkit.entity.SplashPotion
-import org.bukkit.entity.ThrownPotion
 import org.bukkit.entity.WanderingTrader
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -25,10 +31,13 @@ import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.entity.PotionSplashEvent
-import org.bukkit.event.entity.ProjectileLaunchEvent
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.PrepareAnvilEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.inventory.AnvilInventory
 import org.bukkit.inventory.InventoryHolder
-import org.bukkit.inventory.MerchantRecipe
 import org.bukkit.persistence.PersistentDataHolder
 import kotlin.math.cos
 import kotlin.math.sin
@@ -42,13 +51,21 @@ private val BLOCK_FACE_TO_CHEST_DIRECTION = mapOf(
 )
 private const val SINGLE_CHEST_SIZE = 27
 
-class PlayerListeners : Listener {
+class PlayerListeners(
+    private val userManager: UserManager
+) : Listener {
 
     @EventHandler
     private fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
+        getCoordinatesColor(player)?.apply { userManager.createUser(player.uniqueId, this) }
         if (player.hasPlayedBefore()) return
         giveFish(player)
+    }
+
+    @EventHandler
+    private fun onPlayerLeave(event: PlayerQuitEvent) {
+        this.userManager.removeUser(event.player.uniqueId)
     }
 
     private fun giveFish(player: Player) {
@@ -201,6 +218,34 @@ class PlayerListeners : Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    private fun onPlayerMove(event: PlayerMoveEvent) {
+        val player = event.player
+        val from = event.from
+        val to = event.to
+        if (from.x == to.x && from.y == to.y && from.z == to.z) return
+        val user = this.userManager[player.uniqueId] ?: return
+        user.lastMoved = System.currentTimeMillis()
+        val color = user.coordinatesColor ?: return
+        sendCoordinateActionBar(player, color)
+    }
+
+    @EventHandler
+    private fun onPlayerChat(event: AsyncChatEvent) {
+        event.renderer { _, _, message, _ -> getSafeMessage(message) }
+    }
+
+    @EventHandler
+    private fun onAnvilRename(event: PrepareAnvilEvent) {
+        val inventory = event.inventory
+        val result = (inventory.result ?: return).clone()
+        val meta = result.itemMeta ?: return
+        meta.displayName(getSafeMessage(meta.displayName() ?: return))
+        result.itemMeta = meta
+        inventory.result = result
+        event.result = result
     }
 
 }
