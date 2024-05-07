@@ -22,6 +22,7 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.Chest
+import org.bukkit.block.DoubleChest
 import org.bukkit.entity.Player
 import org.bukkit.entity.WanderingTrader
 import org.bukkit.event.EventHandler
@@ -33,11 +34,13 @@ import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.entity.PotionSplashEvent
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.PrepareAnvilEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.AnvilInventory
+import org.bukkit.inventory.DoubleChestInventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.persistence.PersistentDataHolder
 import kotlin.math.cos
@@ -85,6 +88,35 @@ class PlayerListeners(
         handleDeathChestDrop(event.blockList())
     }
 
+    private fun handleDeathChestDrop(blocks: MutableCollection<Block>) {
+        blocks.removeIf { block ->
+            return@removeIf isDeathChest(block.state as? Chest ?: return@removeIf false)
+        }
+    }
+
+    @EventHandler
+    private fun onChestClose(event: InventoryCloseEvent) {
+        val inventory = event.inventory
+        val holder = inventory.holder
+        if (holder !is DoubleChest) {
+            return
+        }
+        if (inventory !is DoubleChestInventory){
+            return
+        }
+        val left = inventory.leftSide.holder as? Chest ?: return
+        val right = inventory.rightSide.holder as? Chest ?: return
+        if (!inventory.isEmpty){
+            return
+        }
+        if (isDeathChest(left)) {
+            left.block.type = Material.AIR
+        }
+        if (isDeathChest(right)) {
+            right.block.type = Material.AIR
+        }
+    }
+
     @EventHandler
     private fun onBlockBreak(event: BlockBreakEvent) {
         val block = event.block
@@ -98,19 +130,10 @@ class PlayerListeners(
         block.type = Material.AIR
     }
 
-    private fun handleDeathChestDrop(blocks: MutableCollection<Block>) {
-        blocks.removeIf { block ->
-            if (!isDeathChest(block.state as? Chest ?: return@removeIf false)) {
-                return@removeIf false
-            }
-            block.type = Material.AIR
-            return@removeIf true
-        }
-    }
-
     @EventHandler
     private fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.player
+        if (player.inventory.isEmpty) return
         val world = player.world
         var chestLoc = player.location
         var placed = false
