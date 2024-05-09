@@ -28,6 +28,13 @@ private val COORDINATE_COLOR_KEY: NamespacedKey by lazy {
     )
 }
 
+private val PLAYER_VILLAGE_KEY: NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "player_village"
+    )
+}
+
 
 fun setDeathChest(player: Player, chest: PersistentDataHolder) {
     chest.persistentDataContainer.set(DEATH_CHEST_KEY, PersistentDataType.STRING, player.name)
@@ -57,4 +64,12 @@ fun setCoordinatesColor(player: Player, color: String) {
 
 fun removeCoordinatesColor(player: Player) {
     player.persistentDataContainer.remove(COORDINATE_COLOR_KEY)
+}
+
+fun getPlayerVillageId(player: Player): String? {
+    return player.persistentDataContainer.get(PLAYER_VILLAGE_KEY, PersistentDataType.STRING)
+}
+
+fun setPlayerVillageId(player: Player, villageId: String) {
+    player.persistentDataContainer.set(PLAYER_VILLAGE_KEY, PersistentDataType.STRING, villageId)
 }

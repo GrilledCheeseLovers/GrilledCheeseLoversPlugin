@@ -41,3 +41,8 @@ val INVALID_COMMAND_USAGE = MINI_MESSAGE.deserialize("<red>Do better.")
 val REMOVED_COORDINATES = MINI_MESSAGE.deserialize("<red>No more coordinates for you.")
 
 val DEATH_SCOREBOARD_TITLE = MINI_MESSAGE.deserialize("<rainbow>Player Deaths")
+
+val BOOST_DOES_NOT_EXIST = MINI_MESSAGE.deserialize("<red>That boost does not exist")
+val NOT_ENOUGH_WEALTH = MINI_MESSAGE.deserialize("<red>You are too poor")
+val PURCHASED_BOOST = MINI_MESSAGE.deserialize("<green>You purchased a boost")
+val BOOST_ALREADY_ACTIVE = MINI_MESSAGE.deserialize("<red>You already have a boost of that type active")

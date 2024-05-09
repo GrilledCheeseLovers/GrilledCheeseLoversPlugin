@@ -1,0 +1,22 @@
+wealth-item:
+  material: PAPER
+  name: "<green>Wealth"
+  lore:
+    - ""
+    - "<aqua>Worth: %value%"
+
+villages:
+  "id":
+    members:
+      - "some-uuid"
+
+boosts:
+  haste:
+    type: POTION_EFFECT
+    name: "<green>Haste"
+    levels:
+      1:
+        potion-type: haste
+        potion-level: 1
+        cost: 1 # todo
+        duration-in-seconds: duration-in-seconds
