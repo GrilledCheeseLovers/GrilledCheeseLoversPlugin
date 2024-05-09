@@ -16,10 +16,10 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.potion.PotionEffectType
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
+import java.util.EnumMap
 import java.util.UUID
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -35,6 +35,7 @@ private const val GLOWING_KEY = "glowing"
 
 private const val BOOSTS_KEY = "boosts"
 private const val BOOST_NAME_KEY = "name"
+private const val BOOST_DESCRIPTION_NAME = "description"
 private const val BOOST_LEVELS_KEY = "levels"
 private const val BOOST_TYPE_KEY = "type"
 private const val BOOST_VALUE_KEY = "value"
@@ -46,6 +47,9 @@ private const val POTION_BOOST_LEVEL_KEY = "potion-level"
 
 private const val VILLAGES_KEY = "villages"
 private const val VILLAGE_MEMBERS_KEY = "members"
+private const val VILLAGE_NAME_KEY = "name"
+
+private const val MATERIAL_VALUES_KEY = "material-values"
 
 class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
 
@@ -53,6 +57,8 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
     private var villageRadius: Int = 0
     private var possibleBoosts: MutableMap<BoostType<*>, Collection<Boost<*>>> = hashMapOf()
     private var boostsById: MutableMap<String, Boost<*>> = hashMapOf()
+    private val materialValues: MutableMap<Material, Double> = EnumMap(org.bukkit.Material::class.java)
+    private var loadedVillages = false
 
     private val villageSavesPath = this.plugin.dataFolder.toPath().resolve("villages.json")
 
@@ -65,6 +71,10 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
             this.loadBoosts(config.getConfigurationSection(BOOSTS_KEY))
         )
         this.loadVillages(config)
+        this.loadMaterialValues(
+            config.getConfigurationSection(MATERIAL_VALUES_KEY)
+                ?: throw IllegalArgumentException("Material values are required")
+        )
     }
 
     fun getVillageRadius(): Int {
@@ -83,6 +93,10 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         return this.boostsById[id]
     }
 
+    fun getItemValue(itemStack: ItemStack): Double {
+        return this.materialValues[itemStack.type] ?: 0.0
+    }
+
     private fun loadVillages(config: FileConfiguration) {
         val villageSaveFile = this.villageSavesPath.toFile()
         if (!villageSaveFile.exists()) {
@@ -98,8 +112,10 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
                 val members =
                     idSection.getStringList(VILLAGE_MEMBERS_KEY).map { UUID.fromString(it) }
                         .toSet()
+                val name = idSection.getString(VILLAGE_NAME_KEY) ?: id
                 val village = Village(
                     id,
+                    name,
                     this.plugin,
                     this,
                     members,
@@ -110,20 +126,27 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
             }
         }
 
+        val lines = Files.readAllLines(this.villageSavesPath, StandardCharsets.UTF_8).joinToString(separator = "\n")
         val savedVillages = loadVillagesFromJson(
             this.plugin,
             this,
-            Files.readAllLines(this.villageSavesPath, StandardCharsets.UTF_8).joinToString { "\n" })
-            .toMutableMap()
+            lines
+        ).toMutableMap()
         for (configVillage in configVillages) {
             savedVillages.putIfAbsent(configVillage.id, configVillage)
         }
-        val villageManager = this.plugin.villageManger
-        savedVillages.values.forEach { villageManager.addVillage(it) }
+        val villageManager = this.plugin.villageManager
+        savedVillages.values.forEach {
+            villageManager.addVillage(it)
+            it.init()
+        }
+        this.loadedVillages = true
     }
 
     fun saveVillages() {
-        val villages = this.plugin.villageManger.getVillages()
+        if (!this.loadedVillages) return
+        plugin.logger.info("Saved villages")
+        val villages = this.plugin.villageManager.getVillages()
         val villageSaveFile = villageSavesPath.toFile()
         if (!villageSaveFile.exists()) {
             villageSaveFile.parentFile.mkdirs()
@@ -134,7 +157,15 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
             .setPrettyPrinting()
             .create()
         val string = gson.toJson(json)
-        Files.writeString(this.villageSavesPath, string, StandardOpenOption.WRITE)
+        Files.writeString(this.villageSavesPath, string, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+    }
+
+    private fun loadMaterialValues(section: ConfigurationSection) {
+        for (key in section.getKeys(false)) {
+            val material = Material.matchMaterial(key.uppercase()) ?: continue
+            val value = section.getDouble(key)
+            this.materialValues[material] = value
+        }
     }
 
     private fun loadBoosts(boostsSection: ConfigurationSection?): Map<BoostType<*>, Collection<Boost<*>>> {
@@ -149,25 +180,26 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
             ) ?: throw IllegalArgumentException("${section.getString(BOOST_TYPE_KEY)} was not found")
 
             val name = section.getString(BOOST_NAME_KEY) ?: id
+            val description = section.getString(BOOST_DESCRIPTION_NAME, "")!!
 
             val boost: Boost<*> = when (type) {
                 BoostType.NoPhantoms -> {
-                    loadBooleanBoost(section, id, type as BoostType<Boolean>, name)
+                    loadBooleanBoost(section, id, type as BoostType<Boolean>, name, description)
                 }
 
                 BoostType.PotionEffect -> {
-                    loadPotionBoost(section, id, type as BoostType<PotionBoostData>, name)
+                    loadPotionBoost(section, id, type as BoostType<PotionBoostData>, name, description)
                 }
 
                 BoostType.FasterCrops,
                 BoostType.VillagerDiscount,
                 BoostType.IncreasedDurability -> {
-                    loadDoubleBoost(section, id, type as BoostType<Double>, name)
+                    loadDoubleBoost(section, id, type as BoostType<Double>, name, description)
                 }
-
-                BoostType.VillageRadius -> {
-                    loadIntBoost(section, id, type as BoostType<Int>, name)
-                }
+//
+//                BoostType.VillageRadius -> {
+//                    loadIntBoost(section, id, type as BoostType<Int>, name, description)
+//                }
             }
             val boostList = boosts.computeIfAbsent(type) { _ -> arrayListOf() } as MutableList<Boost<*>>
             boostList.add(boost)
@@ -204,14 +236,15 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         section: ConfigurationSection,
         id: String,
         type: BoostType<Int>,
-        name: String
+        name: String,
+        description: String
     ): Boost<Int> {
         val levelsSection = section.getConfigurationSection(BOOST_LEVELS_KEY)
             ?: throw IllegalArgumentException("$BOOST_LEVELS_KEY is required")
         val levels = loadLevelData(
             levelsSection
         ) { loadIntBoostValue(it) }
-        return Boost(id, name, type, levels)
+        return Boost(id, name, description, type, levels)
     }
 
     private fun loadIntBoostValue(
@@ -227,14 +260,15 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         section: ConfigurationSection,
         id: String,
         type: BoostType<Double>,
-        name: String
+        name: String,
+        description: String
     ): Boost<Double> {
         val levelsSection = section.getConfigurationSection(BOOST_LEVELS_KEY)
             ?: throw IllegalArgumentException("$BOOST_LEVELS_KEY is required")
         val levels = loadLevelData(
             levelsSection
         ) { loadDoubleBoostValue(it) }
-        return Boost(id, name, type, levels)
+        return Boost(id, name, description, type, levels)
     }
 
 
@@ -251,14 +285,15 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         section: ConfigurationSection,
         id: String,
         type: BoostType<Boolean>,
-        name: String
+        name: String,
+        description: String
     ): Boost<Boolean> {
         val levelsSection = section.getConfigurationSection(BOOST_LEVELS_KEY)
             ?: throw IllegalArgumentException("$BOOST_LEVELS_KEY is required")
         val levels = loadLevelData(
             levelsSection
         ) { loadBooleanBoostValue(it) }
-        return Boost(id, name, type, levels)
+        return Boost(id, name, description, type, levels)
     }
 
 
@@ -284,14 +319,15 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         section: ConfigurationSection,
         id: String,
         type: BoostType<PotionBoostData>,
-        name: String
+        name: String,
+        description: String
     ): Boost<PotionBoostData> {
         val levelsSection = section.getConfigurationSection(BOOST_LEVELS_KEY)
             ?: throw IllegalArgumentException("$BOOST_LEVELS_KEY is required")
         val levels = loadLevelData(
             levelsSection
         ) { loadPotionBoostDataValue(it) }
-        return Boost(id, name, type, levels)
+        return Boost(id, name, description, type, levels)
     }
 
     private fun loadWealthItem(config: FileConfiguration): ItemStack {

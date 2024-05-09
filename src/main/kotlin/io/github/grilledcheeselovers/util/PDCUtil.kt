@@ -2,8 +2,11 @@ package io.github.grilledcheeselovers.util
 
 import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
 import org.bukkit.NamespacedKey
+import org.bukkit.block.Beacon
 import org.bukkit.block.Biome
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
@@ -34,6 +37,21 @@ private val PLAYER_VILLAGE_KEY: NamespacedKey by lazy {
         "player_village"
     )
 }
+
+private val BEACON_ITEM_VILLAGE_KEY: NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "beacon_village"
+    )
+}
+
+private val BEACON_BLOCK_KEY : NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "beacon_block"
+    )
+}
+
 
 
 fun setDeathChest(player: Player, chest: PersistentDataHolder) {
@@ -72,4 +90,23 @@ fun getPlayerVillageId(player: Player): String? {
 
 fun setPlayerVillageId(player: Player, villageId: String) {
     player.persistentDataContainer.set(PLAYER_VILLAGE_KEY, PersistentDataType.STRING, villageId)
+}
+
+fun setBeaconVillage(itemMeta: ItemMeta, villageId: String) {
+    itemMeta.persistentDataContainer.set(BEACON_ITEM_VILLAGE_KEY, PersistentDataType.STRING, villageId)
+}
+
+fun getBeaconVillage(itemStack: ItemStack): String? {
+    val meta = itemStack.itemMeta ?: return null
+    return meta.persistentDataContainer.get(BEACON_ITEM_VILLAGE_KEY, PersistentDataType.STRING)
+}
+
+fun setBeaconBlock(beacon: Beacon) {
+    beacon.persistentDataContainer.set(BEACON_BLOCK_KEY, PersistentDataType.BOOLEAN, true)
+    beacon.update()
+}
+
+fun isBeaconBlock(block: Block): Boolean {
+    val state = block.state as? Beacon ?: return false
+    return state.persistentDataContainer.get(BEACON_BLOCK_KEY, PersistentDataType.BOOLEAN) ?: false
 }

@@ -4,20 +4,36 @@ import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
 import io.github.grilledcheeselovers.config.GrilledCheeseConfig
 import io.github.grilledcheeselovers.constant.BOOST_ALREADY_ACTIVE
 import io.github.grilledcheeselovers.constant.BOOST_DOES_NOT_EXIST
+import io.github.grilledcheeselovers.constant.ENTERED_VILLAGE_MESSAGE
+import io.github.grilledcheeselovers.constant.LEFT_VILLAGE_MESSAGE
 import io.github.grilledcheeselovers.constant.NOT_ENOUGH_WEALTH
 import io.github.grilledcheeselovers.constant.PURCHASED_BOOST
+import io.github.grilledcheeselovers.constant.getDepositMessage
+import io.github.grilledcheeselovers.user.UserManager
+import io.github.grilledcheeselovers.user.VillageScoreboard
+import io.github.grilledcheeselovers.village.logging.VillageLogger
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.Particle.DustOptions
+import org.bukkit.World
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.scheduler.BukkitTask
 import java.time.LocalDateTime
 import java.util.Collections
 import java.util.UUID
 import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
+
 
 class Village(
     val id: String,
+    val name: String,
     private val plugin: GrilledCheeseLoversPlugin,
     private val config: GrilledCheeseConfig = plugin.grilledCheeseConfig,
     val members: Set<UUID>,
@@ -25,9 +41,18 @@ class Village(
     private val activeBoosts: MutableMap<String, ActiveBoost<*>>,
     private var wealth: Double = 0.0
 ) {
+
+    private val logger = VillageLogger(this.plugin, this)
+    private val scoreboard = run {
+        val scoreboard = VillageScoreboard(this)
+        scoreboard.initialize()
+        return@run scoreboard
+    }
+
     private var beaconLocation: Location? = null
 
     private lateinit var timer: BukkitTask
+    private lateinit var asyncTimer: BukkitTask
 
     fun <T> attemptPurchaseBoost(player: Player, boost: Boost<T>, level: Int): Boolean {
         val data = boost.levelValues[level] ?: run {
@@ -45,8 +70,18 @@ class Village(
         }
         this.wealth -= cost
         player.sendMessage(PURCHASED_BOOST)
-        addBoost(boost, level)
+        val activeBoost = addBoost(boost, level)
+        activateBoost(player, boost, activeBoost)
+        this.logger.logBoostPurchase(player, boost, level)
+        this.scoreboard.updateWealth()
         return true
+    }
+
+    fun depositWealth(player: Player, wealth: Double, item: ItemStack, amount: Int) {
+        this.wealth += wealth
+        this.logger.logWealthDeposit(player, wealth, item, amount)
+        player.sendMessage(getDepositMessage(player, item, wealth))
+        this.scoreboard.updateWealth()
     }
 
     fun getUpgradeLevels(): Map<String, Int> {
@@ -57,8 +92,10 @@ class Village(
         return Collections.unmodifiableMap(this.activeBoosts)
     }
 
-    fun <T> addBoost(boost: Boost<T>, level: Int) {
-        this.activeBoosts[boost.id] = ActiveBoost(boost, boost.id, level)
+    fun <T> addBoost(boost: Boost<T>, level: Int): ActiveBoost<T> {
+        val activeBoost = ActiveBoost(boost, boost.id, level)
+        this.activeBoosts[boost.id] = activeBoost
+        return activeBoost
     }
 
     fun <T> hasBoost(id: String): Boolean {
@@ -71,9 +108,10 @@ class Village(
     }
 
     fun init() {
-        if (this::timer.isInitialized) {
+        if (this::timer.isInitialized || this::asyncTimer.isInitialized) {
             throw IllegalStateException("Village is already initialized!")
         }
+        val userManager = this.plugin.userManager
         this.timer = Bukkit.getScheduler().runTaskTimer(this.plugin, Runnable {
             this.activeBoosts.entries.removeIf { entry ->
                 val activeBoost = entry.value
@@ -83,7 +121,61 @@ class Village(
                 }
                 return@removeIf false
             }
-        }, 1, 1)
+        }, 20, 20)
+        this.asyncTimer = Bukkit.getScheduler().runTaskTimerAsynchronously(this.plugin, Runnable {
+            this.handleBorderSend(userManager)
+        }, 20 * 1, 20 * 1)
+    }
+
+    fun stop() {
+        this.timer.cancel()
+        this.asyncTimer.cancel()
+    }
+
+    private fun handleBorderSend(userManager: UserManager) {
+        val beaconLoc = this.beaconLocation ?: return
+        val sendTo = this.members.mapNotNull { userManager[it] }
+            .filter { it.viewingVillageBorder }
+        if (sendTo.isEmpty()) return
+        val radius = this.getRadius()
+        val startX = beaconLoc.blockX - radius
+        val startZ = beaconLoc.blockZ - radius
+        val endX = beaconLoc.blockX + radius
+        val endZ = beaconLoc.blockZ + radius
+        val particle = Particle.REDSTONE
+        val dustOptions = DustOptions(Color.fromRGB(0, 255, 247), 1.0f)
+        val minX = min(startX, endX)
+        val maxX = max(startX, endX)
+        val minZ = min(startZ, endZ)
+        val maxZ = max(startZ, endZ)
+        for (user in sendTo) {
+            val player = Bukkit.getPlayer(user.uuid) ?: continue
+            val y = player.y
+            drawBorderLine(particle, dustOptions, player, minX, maxX, minZ, minZ, y.toInt(), 10)
+            drawBorderLine(particle, dustOptions, player, minX, maxX, maxZ, maxZ, y.toInt(), 10)
+            drawBorderLine(particle, dustOptions, player, minX, minX, minZ, maxZ, y.toInt(), 10)
+            drawBorderLine(particle, dustOptions, player, maxX, maxX, minZ, maxZ, y.toInt(), 10)
+        }
+    }
+
+    private fun drawBorderLine(
+        particle: Particle,
+        dustOptions: DustOptions,
+        player: Player,
+        startX: Int,
+        endX: Int,
+        startZ: Int,
+        endZ: Int,
+        startHeight: Int,
+        height: Int
+    ) {
+        for (x in min(startX, endX)..max(startX, endX)) {
+            for (z in min(startZ, endZ)..max(startZ, endZ)) {
+                for (y in (startHeight - height)..(startHeight + height)) {
+                    player.spawnParticle(particle, x.toDouble(), y.toDouble(), z.toDouble(), 1, dustOptions)
+                }
+            }
+        }
     }
 
     private fun deactivateBoost(activeBoost: ActiveBoost<*>) {
@@ -96,7 +188,11 @@ class Village(
             return
         }
         if (boost.type == BoostType.PotionEffect) {
-            deactivatePotionBoost(activeBoost as ActiveBoost<PotionBoostData>, boost as Boost<PotionBoostData>, players)
+            deactivatePotionBoost(
+                activeBoost as ActiveBoost<PotionBoostData>,
+                boost as Boost<PotionBoostData>,
+                players
+            )
         }
     }
 
@@ -124,9 +220,9 @@ class Village(
     fun enter(player: Player) {
         for (activeBoost in this.activeBoosts.values.filter { boost -> this.config.getBoostById(boost.boostId)?.type == BoostType.PotionEffect }) {
             val boost = this.config.getBoostById(activeBoost.boostId) as? Boost<PotionBoostData> ?: continue
-            val levelData = boost.levelValues[activeBoost.level] ?: continue
-            player.addPotionEffect(PotionEffect(levelData.value.effectType, Int.MAX_VALUE, levelData.value.level))
+            activateBoost(player, boost, activeBoost)
         }
+        player.sendMessage(ENTERED_VILLAGE_MESSAGE)
     }
 
     fun leave(player: Player) {
@@ -135,6 +231,72 @@ class Village(
             val levelData = boost.levelValues[activeBoost.level] ?: continue
             player.removePotionEffect(levelData.value.effectType)
         }
+        player.sendMessage(LEFT_VILLAGE_MESSAGE)
     }
 
+    private fun activateBoost(player: Player, boost: Boost<*>, activeBoost: ActiveBoost<*>) {
+        when (boost.type) {
+            BoostType.PotionEffect -> activatePotionBoost(
+                player,
+                boost as Boost<PotionBoostData>,
+                activeBoost as ActiveBoost<PotionBoostData>
+            )
+
+            else -> {
+
+            }
+        }
+    }
+
+    private fun activatePotionBoost(
+        player: Player,
+        boost: Boost<PotionBoostData>,
+        activeBoost: ActiveBoost<PotionBoostData>
+    ) {
+        val levelData = boost.levelValues[activeBoost.level] ?: return
+        player.addPotionEffect(
+            PotionEffect(
+                levelData.value.effectType,
+                levelData.duration.inWholeSeconds.toInt() * 20,
+                levelData.value.level
+            )
+        )
+    }
+
+    fun getOnlinePlayers(): Collection<Player> {
+        return this.members.mapNotNull { Bukkit.getPlayer(it) }
+    }
+
+    private fun checkBeaconValid() {
+        if (this.beaconLocation?.block?.type != Material.BEACON) {
+            this.beaconLocation = null
+        }
+    }
+
+    fun getBeaconLocation(): Location? {
+        this.checkBeaconValid()
+        return this.beaconLocation
+    }
+
+    fun hasBeacon(): Boolean {
+        this.checkBeaconValid()
+        return this.beaconLocation != null
+    }
+
+    fun setBeacon(location: Location) {
+        this.beaconLocation = location
+    }
+
+    fun isBeacon(location: Location): Boolean {
+        this.checkBeaconValid()
+        val beacon = this.beaconLocation ?: return false
+        return location.blockX == beacon.blockX && location.blockY == beacon.blockY && location.blockZ == beacon.blockZ
+    }
+
+    fun getWealth(): Double = this.wealth
+
+    fun sendScoreboard(player: Player) {
+        this.scoreboard.sendScoreboard(player)
+        player.sendMessage("Sent scoreboard")
+    }
 }

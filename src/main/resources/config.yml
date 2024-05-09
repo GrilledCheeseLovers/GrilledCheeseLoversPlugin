@@ -1,12 +1,17 @@
+village-radius: 32
+
+material-values:
+  DIAMOND_BLOCK: 100
+
 wealth-item:
   material: PAPER
   name: "<green>Wealth"
   lore:
     - ""
     - "<aqua>Worth: %value%"
-
 villages:
   "id":
+    name: "<blue>Great Village"
     members:
       - "some-uuid"
 
@@ -19,4 +24,4 @@ boosts:
         potion-type: haste
         potion-level: 1
         cost: 1 # todo
-        duration-in-seconds: duration-in-seconds
+        duration-in-seconds: 10

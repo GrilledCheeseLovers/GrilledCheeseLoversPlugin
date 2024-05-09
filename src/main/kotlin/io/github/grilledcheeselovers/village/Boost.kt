@@ -1,17 +1,22 @@
 package io.github.grilledcheeselovers.village
 
+import io.github.grilledcheeselovers.constant.FASTER_CROPS_DISPLAY_NAME
+import io.github.grilledcheeselovers.constant.INCREASED_DURABILITY_DISPLAY_NAME
+import io.github.grilledcheeselovers.constant.NO_PHANTOMS_DISPLAY_NAME
+import io.github.grilledcheeselovers.constant.POTION_EFFECT_DISPLAY_NAME
+import io.github.grilledcheeselovers.constant.VILLAGER_DISCOUNT_DISPLAY_NAME
+import net.kyori.adventure.text.Component
 import org.bukkit.potion.PotionEffectType
 import java.time.LocalDateTime
 import kotlin.time.Duration
 
-sealed class BoostType<T>(val clazz: Class<T>) {
+sealed class BoostType<T>(val clazz: Class<T>, val displayName: String) {
 
-    data object FasterCrops : BoostType<Double>(Double::class.java)
-    data object PotionEffect : BoostType<PotionBoostData>(PotionBoostData::class.java)
-    data object VillagerDiscount : BoostType<Double>(Double::class.java)
-    data object IncreasedDurability : BoostType<Double>(Double::class.java)
-    data object NoPhantoms : BoostType<Boolean>(Boolean::class.java)
-    data object VillageRadius : BoostType<Int>(Int::class.java)
+    data object FasterCrops : BoostType<Double>(Double::class.java, FASTER_CROPS_DISPLAY_NAME)
+    data object PotionEffect : BoostType<PotionBoostData>(PotionBoostData::class.java, POTION_EFFECT_DISPLAY_NAME)
+    data object VillagerDiscount : BoostType<Double>(Double::class.java, VILLAGER_DISCOUNT_DISPLAY_NAME)
+    data object IncreasedDurability : BoostType<Double>(Double::class.java, INCREASED_DURABILITY_DISPLAY_NAME)
+    data object NoPhantoms : BoostType<Boolean>(Boolean::class.java, NO_PHANTOMS_DISPLAY_NAME)
 
     companion object {
 
@@ -34,6 +39,7 @@ sealed class BoostType<T>(val clazz: Class<T>) {
 data class Boost<T>(
     val id: String,
     val name: String,
+    val description: String,
     val type: BoostType<T>,
     val levelValues: Map<Int, BoostLevelData<T>>
 )

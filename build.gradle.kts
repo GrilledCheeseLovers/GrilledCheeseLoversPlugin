@@ -19,6 +19,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    implementation("com.github.stefvanschie.inventoryframework:IF:0.10.13")
 }
 
 tasks {
@@ -33,6 +34,8 @@ tasks {
     shadowJar {
 
         archiveFileName.set("${project.name}-${project.version}.jar")
+
+        relocate("com.github.stefvanschie.inventoryframework", "io.github.grilledcheeselovers.inventoryframework")
 
         dependencies {
             exclude(dependency("org.yaml:snakeyaml"))
@@ -61,13 +64,16 @@ bukkit {
 
     apiVersion = "1.17"
 
-    load = BukkitPluginDescription.PluginLoadOrder.STARTUP
+    load = BukkitPluginDescription.PluginLoadOrder.POSTWORLD
     prefix = "GrilledCheeseLovers"
 
     commands {
         register("grilledcheese") {
             description = "Grilled Cheese Command"
             aliases = listOf("gc")
+        }
+        register("village") {
+            description = "Village command"
         }
     }
 }

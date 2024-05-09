@@ -12,11 +12,8 @@ import io.github.grilledcheeselovers.util.getCoordinatesColor
 import io.github.grilledcheeselovers.util.getPotionBiome
 import io.github.grilledcheeselovers.util.isDeathChest
 import io.github.grilledcheeselovers.util.setDeathChest
-import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -33,13 +30,11 @@ import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.entity.PotionSplashEvent
-import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.PrepareAnvilEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.inventory.AnvilInventory
 import org.bukkit.inventory.DoubleChestInventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.persistence.PersistentDataHolder
@@ -63,8 +58,9 @@ class PlayerListeners(
     @EventHandler
     private fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
-        getCoordinatesColor(player)?.apply { userManager.createUser(player.uniqueId, this) }
-        this.deathScoreboard.sendScoreboard(player)
+        val user = userManager.createUser(player.uniqueId, null)
+        getCoordinatesColor(player)?.apply { user.coordinatesColor = this }
+//        this.deathScoreboard.sendScoreboard(player)
         if (player.hasPlayedBefore()) return
         giveFish(player)
     }
@@ -101,12 +97,12 @@ class PlayerListeners(
         if (holder !is DoubleChest) {
             return
         }
-        if (inventory !is DoubleChestInventory){
+        if (inventory !is DoubleChestInventory) {
             return
         }
         val left = inventory.leftSide.holder as? Chest ?: return
         val right = inventory.rightSide.holder as? Chest ?: return
-        if (!inventory.isEmpty){
+        if (!inventory.isEmpty) {
             return
         }
         if (isDeathChest(left)) {
@@ -261,7 +257,8 @@ class PlayerListeners(
     @EventHandler
     private fun onPlayerChat(event: AsyncChatEvent) {
         event.renderer { _, displayName, message, _ ->
-            getSafeMessage(displayName.append(Component.text(": ")).append(message)) }
+            getSafeMessage(displayName.append(Component.text(": ")).append(message))
+        }
     }
 
     @EventHandler
