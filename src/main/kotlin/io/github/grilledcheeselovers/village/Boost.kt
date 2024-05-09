@@ -41,7 +41,8 @@ data class Boost<T>(
 data class BoostLevelData<T>(val cost: Double, val value: T, val duration: Duration)
 
 class ActiveBoost<T>(
-    val boost: Boost<T>,
+    boost: Boost<T>,
+    val boostId: String = boost.id,
     val level: Int,
     val endTime: LocalDateTime = LocalDateTime.now().plusSeconds(boost.levelValues[level]!!.duration.inWholeSeconds)
 )

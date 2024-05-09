@@ -49,7 +49,7 @@ class Village(
         return true
     }
 
-    fun getUpgradeLevels() : Map<String, Int> {
+    fun getUpgradeLevels(): Map<String, Int> {
         return Collections.unmodifiableMap(this.upgradeLevels)
     }
 
@@ -58,7 +58,7 @@ class Village(
     }
 
     fun <T> addBoost(boost: Boost<T>, level: Int) {
-        this.activeBoosts[boost.id] = ActiveBoost(boost, level)
+        this.activeBoosts[boost.id] = ActiveBoost(boost, boost.id, level)
     }
 
     fun <T> hasBoost(id: String): Boolean {
@@ -91,13 +91,20 @@ class Village(
             .filter { it != null && it.isOnline }
             .filterNotNull()
         if (players.isEmpty()) return
-        if (activeBoost.boost.type == BoostType.PotionEffect) {
-            deactivatePotionBoost(activeBoost as ActiveBoost<PotionBoostData>, players)
+        val boost = this.config.getBoostById(activeBoost.boostId) ?: run {
+            this.plugin.logger.warning("Cannot remove boost ${activeBoost.boostId} because it was not found")
+            return
+        }
+        if (boost.type == BoostType.PotionEffect) {
+            deactivatePotionBoost(activeBoost as ActiveBoost<PotionBoostData>, boost as Boost<PotionBoostData>, players)
         }
     }
 
-    private fun deactivatePotionBoost(activeBoost: ActiveBoost<PotionBoostData>, players: Collection<Player>) {
-        val boost = activeBoost.boost
+    private fun deactivatePotionBoost(
+        activeBoost: ActiveBoost<PotionBoostData>,
+        boost: Boost<PotionBoostData>,
+        players: Collection<Player>
+    ) {
         val data = boost.levelValues[activeBoost.level] ?: return
         val effectType = data.value.effectType
         for (player in players) {
@@ -115,16 +122,16 @@ class Village(
     }
 
     fun enter(player: Player) {
-        for (activeBoost in this.activeBoosts.values.filter { boost -> boost.boost.type == BoostType.PotionEffect }) {
-            val boost = activeBoost.boost as Boost<PotionBoostData>
+        for (activeBoost in this.activeBoosts.values.filter { boost -> this.config.getBoostById(boost.boostId)?.type == BoostType.PotionEffect }) {
+            val boost = this.config.getBoostById(activeBoost.boostId) as? Boost<PotionBoostData> ?: continue
             val levelData = boost.levelValues[activeBoost.level] ?: continue
             player.addPotionEffect(PotionEffect(levelData.value.effectType, Int.MAX_VALUE, levelData.value.level))
         }
     }
 
     fun leave(player: Player) {
-        for (activeBoost in this.activeBoosts.values.filter { boost -> boost.boost.type == BoostType.PotionEffect }) {
-            val boost = activeBoost.boost as Boost<PotionBoostData>
+        for (activeBoost in this.activeBoosts.values.filter { boost -> this.config.getBoostById(boost.boostId)?.type == BoostType.PotionEffect }) {
+            val boost = this.config.getBoostById(activeBoost.boostId) as? Boost<PotionBoostData> ?: continue
             val levelData = boost.levelValues[activeBoost.level] ?: continue
             player.removePotionEffect(levelData.value.effectType)
         }

@@ -43,7 +43,7 @@ fun loadVillagesFromJson(
             val timeLeft = boostObject.getAsJsonObject(BOOST_TIME_LEFT).asInt
             val endTime = LocalDateTime.now().plusSeconds(timeLeft.toLong())
             val boost = config.getBoostById(boostId) ?: continue
-            boosts[boostId] = ActiveBoost(boost, level, endTime)
+            boosts[boostId] = ActiveBoost(boost, boostId, level, endTime)
         }
         val village = Village(
             id,
