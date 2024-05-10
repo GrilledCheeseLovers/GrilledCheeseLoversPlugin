@@ -1,16 +1,21 @@
 package io.github.grilledcheeselovers.util
 
 import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
+import io.github.grilledcheeselovers.constant.DATE_TIME_FORMATTER
+import io.github.grilledcheeselovers.village.Village
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Beacon
 import org.bukkit.block.Biome
 import org.bukkit.block.Block
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.entity.Villager
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
+import java.time.LocalDateTime
 
 private val DEATH_CHEST_KEY: NamespacedKey by lazy {
     NamespacedKey(
@@ -45,13 +50,34 @@ private val BEACON_ITEM_VILLAGE_KEY: NamespacedKey by lazy {
     )
 }
 
-private val BEACON_BLOCK_KEY : NamespacedKey by lazy {
+private val BEACON_BLOCK_KEY: NamespacedKey by lazy {
     NamespacedKey(
         JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
         "beacon_block"
     )
 }
 
+private val WEALTH_ITEM_AMOUNT_KEY: NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "wealth_amount"
+    )
+}
+
+
+private val VILLAGER_VILLAGE_ID_KEY: NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "village_id"
+    )
+}
+
+private val VILLAGER_CAREER_CHANGE_TIME_KEY: NamespacedKey by lazy {
+    NamespacedKey(
+        JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java),
+        "last_career_change_time"
+    )
+}
 
 
 fun setDeathChest(player: Player, chest: PersistentDataHolder) {
@@ -109,4 +135,37 @@ fun setBeaconBlock(beacon: Beacon) {
 fun isBeaconBlock(block: Block): Boolean {
     val state = block.state as? Beacon ?: return false
     return state.persistentDataContainer.get(BEACON_BLOCK_KEY, PersistentDataType.BOOLEAN) ?: false
+}
+
+fun setVillagerVillageId(entity: LivingEntity, id: String) {
+    entity.persistentDataContainer.set(VILLAGER_VILLAGE_ID_KEY, PersistentDataType.STRING, id)
+}
+
+fun getVillagerVillageId(entity: LivingEntity): String? {
+    return entity.persistentDataContainer.get(VILLAGER_VILLAGE_ID_KEY, PersistentDataType.STRING)
+}
+
+fun isVillageVillager(entity: LivingEntity): Boolean {
+    return getVillagerVillageId(entity) != null
+}
+
+fun setVillagerLastCareerChange(entity: Villager, time: LocalDateTime) {
+    val formatted = DATE_TIME_FORMATTER.format(time)
+    entity.persistentDataContainer.set(VILLAGER_CAREER_CHANGE_TIME_KEY, PersistentDataType.STRING, formatted)
+}
+
+fun getVillagerLastCareerChange(entity: Villager): LocalDateTime? {
+    val formatted =
+        entity.persistentDataContainer.get(VILLAGER_CAREER_CHANGE_TIME_KEY, PersistentDataType.STRING) ?: return null
+    return LocalDateTime.parse(formatted, DATE_TIME_FORMATTER) ?: null
+}
+
+fun setItemWealthAmount(itemStack: ItemStack, amount: Double) {
+    val meta = itemStack.itemMeta ?: return
+    meta.persistentDataContainer.set(WEALTH_ITEM_AMOUNT_KEY, PersistentDataType.DOUBLE, amount)
+    itemStack.itemMeta = meta
+}
+
+fun getItemWealthAmount(itemStack: ItemStack): Double {
+    return itemStack.itemMeta?.persistentDataContainer?.get(WEALTH_ITEM_AMOUNT_KEY, PersistentDataType.DOUBLE) ?: 0.0
 }

@@ -1,16 +1,27 @@
 package io.github.grilledcheeselovers.village
 
+import com.destroystokyo.paper.entity.villager.Reputation
+import com.destroystokyo.paper.entity.villager.ReputationType
 import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
 import io.github.grilledcheeselovers.config.GrilledCheeseConfig
+import io.github.grilledcheeselovers.constant.ARGUMENT_IS_NOT_NUMBER
 import io.github.grilledcheeselovers.constant.BOOST_ALREADY_ACTIVE
 import io.github.grilledcheeselovers.constant.BOOST_DOES_NOT_EXIST
 import io.github.grilledcheeselovers.constant.ENTERED_VILLAGE_MESSAGE
+import io.github.grilledcheeselovers.constant.INVENTORY_FULL
 import io.github.grilledcheeselovers.constant.LEFT_VILLAGE_MESSAGE
+import io.github.grilledcheeselovers.constant.MINI_MESSAGE
 import io.github.grilledcheeselovers.constant.NOT_ENOUGH_WEALTH
 import io.github.grilledcheeselovers.constant.PURCHASED_BOOST
+import io.github.grilledcheeselovers.constant.PURCHASED_UPGRADE
+import io.github.grilledcheeselovers.constant.UNABLE_TO_CREATE_WEALTH_ITEM
+import io.github.grilledcheeselovers.constant.UPGRADE_ALREADY_MAXED
+import io.github.grilledcheeselovers.constant.UPGRADE_NOT_FOUND
 import io.github.grilledcheeselovers.constant.getDepositMessage
+import io.github.grilledcheeselovers.item.getWealthItem
 import io.github.grilledcheeselovers.user.UserManager
 import io.github.grilledcheeselovers.user.VillageScoreboard
+import io.github.grilledcheeselovers.util.getVillagerVillageId
 import io.github.grilledcheeselovers.village.logging.VillageLogger
 import org.bukkit.Bukkit
 import org.bukkit.Color
@@ -18,13 +29,14 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Particle.DustOptions
-import org.bukkit.World
 import org.bukkit.entity.Player
+import org.bukkit.entity.Villager
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.scheduler.BukkitTask
 import java.time.LocalDateTime
 import java.util.Collections
+import java.util.EnumMap
 import java.util.UUID
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -39,6 +51,7 @@ class Village(
     val members: Set<UUID>,
     private val upgradeLevels: MutableMap<String, Int>,
     private val activeBoosts: MutableMap<String, ActiveBoost<*>>,
+    val specializationId: String,
     private var wealth: Double = 0.0
 ) {
 
@@ -75,6 +88,29 @@ class Village(
         this.logger.logBoostPurchase(player, boost, level)
         this.scoreboard.updateWealth()
         return true
+    }
+
+    fun attemptPurchaseUpgrade(player: Player, upgradeId: String) {
+        val upgrade = this.config.getUpgradeById(upgradeId)
+        if (upgrade == null) {
+            player.sendMessage(UPGRADE_NOT_FOUND)
+            return
+        }
+        val level = this.upgradeLevels[upgradeId] ?: 0
+        val nextCost = upgrade.costCalculator(level)
+        if (this.wealth < nextCost) {
+            player.sendMessage(NOT_ENOUGH_WEALTH)
+            return
+        }
+        if (level >= upgrade.maxLevel) {
+            player.sendMessage(UPGRADE_ALREADY_MAXED)
+            return
+        }
+        this.wealth -= nextCost
+        this.upgradeLevels[upgradeId] = level + 1
+        player.sendMessage(PURCHASED_UPGRADE)
+        this.scoreboard.updateWealth()
+        this.logger.logUpgradePurchase(player, upgradeId, level + 1)
     }
 
     fun depositWealth(player: Player, wealth: Double, item: ItemStack, amount: Int) {
@@ -117,6 +153,7 @@ class Village(
                 val activeBoost = entry.value
                 if (LocalDateTime.now().isAfter(activeBoost.endTime)) {
                     this.deactivateBoost(activeBoost)
+                    sendBoostTimeRanOut(activeBoost)
                     return@removeIf true
                 }
                 return@removeIf false
@@ -125,6 +162,13 @@ class Village(
         this.asyncTimer = Bukkit.getScheduler().runTaskTimerAsynchronously(this.plugin, Runnable {
             this.handleBorderSend(userManager)
         }, 20 * 1, 20 * 1)
+    }
+
+    private fun sendBoostTimeRanOut(activeBoost: ActiveBoost<*>) {
+        val boost = this.config.getBoostById(activeBoost.boostId) ?: return
+        for (member in this.members.mapNotNull { Bukkit.getPlayer(it) }) {
+            member.sendMessage(MINI_MESSAGE.deserialize("<red>Your village's ${boost.name} <red>boost ran out"))
+        }
     }
 
     fun stop() {
@@ -148,13 +192,14 @@ class Village(
         val maxX = max(startX, endX)
         val minZ = min(startZ, endZ)
         val maxZ = max(startZ, endZ)
+        val height = 2
         for (user in sendTo) {
             val player = Bukkit.getPlayer(user.uuid) ?: continue
             val y = player.y
-            drawBorderLine(particle, dustOptions, player, minX, maxX, minZ, minZ, y.toInt(), 10)
-            drawBorderLine(particle, dustOptions, player, minX, maxX, maxZ, maxZ, y.toInt(), 10)
-            drawBorderLine(particle, dustOptions, player, minX, minX, minZ, maxZ, y.toInt(), 10)
-            drawBorderLine(particle, dustOptions, player, maxX, maxX, minZ, maxZ, y.toInt(), 10)
+            drawBorderLine(particle, dustOptions, player, minX, maxX, minZ, minZ, y.toInt(), height)
+            drawBorderLine(particle, dustOptions, player, minX, maxX, maxZ, maxZ, y.toInt(), height)
+            drawBorderLine(particle, dustOptions, player, minX, minX, minZ, maxZ, y.toInt(), height)
+            drawBorderLine(particle, dustOptions, player, maxX, maxX, minZ, maxZ, y.toInt(), height)
         }
     }
 
@@ -187,12 +232,18 @@ class Village(
             this.plugin.logger.warning("Cannot remove boost ${activeBoost.boostId} because it was not found")
             return
         }
-        if (boost.type == BoostType.PotionEffect) {
-            deactivatePotionBoost(
-                activeBoost as ActiveBoost<PotionBoostData>,
-                boost as Boost<PotionBoostData>,
-                players
-            )
+        when (boost.type) {
+            BoostType.PotionEffect -> {
+                deactivatePotionBoost(
+                    activeBoost as ActiveBoost<PotionBoostData>,
+                    boost as Boost<PotionBoostData>,
+                    players
+                )
+            }
+            BoostType.VillagerDiscount -> {
+                deactivateVillagerDiscountBoost()
+            }
+            else -> {}
         }
     }
 
@@ -220,6 +271,8 @@ class Village(
     fun enter(player: Player) {
         for (activeBoost in this.activeBoosts.values.filter { boost -> this.config.getBoostById(boost.boostId)?.type == BoostType.PotionEffect }) {
             val boost = this.config.getBoostById(activeBoost.boostId) as? Boost<PotionBoostData> ?: continue
+            val levelData = boost.levelValues[activeBoost.level] ?: continue
+            if (levelData.global) continue
             activateBoost(player, boost, activeBoost)
         }
         player.sendMessage(ENTERED_VILLAGE_MESSAGE)
@@ -229,6 +282,7 @@ class Village(
         for (activeBoost in this.activeBoosts.values.filter { boost -> this.config.getBoostById(boost.boostId)?.type == BoostType.PotionEffect }) {
             val boost = this.config.getBoostById(activeBoost.boostId) as? Boost<PotionBoostData> ?: continue
             val levelData = boost.levelValues[activeBoost.level] ?: continue
+            if (levelData.global) continue
             player.removePotionEffect(levelData.value.effectType)
         }
         player.sendMessage(LEFT_VILLAGE_MESSAGE)
@@ -242,8 +296,11 @@ class Village(
                 activeBoost as ActiveBoost<PotionBoostData>
             )
 
-            else -> {
+            BoostType.VillagerDiscount -> {
+                activateVillagerDiscountBoost(boost as Boost<Int>, activeBoost as ActiveBoost<Int>)
+            }
 
+            else -> {
             }
         }
     }
@@ -261,6 +318,48 @@ class Village(
                 levelData.value.level
             )
         )
+    }
+
+    private fun activateVillagerDiscountBoost(
+        boost: Boost<Int>,
+        activeBoost: ActiveBoost<Int>
+    ) {
+        val world = this.beaconLocation?.world ?: return
+        val reputationAmount = boost.levelValues[activeBoost.level]?.value ?: return
+
+        val villagers = world.entities.mapNotNull { it as? Villager ?: return@mapNotNull null }
+            .filter { getVillagerVillageId(it) == this.id }
+        for (villager in villagers) {
+            val reputations: MutableMap<UUID, Reputation> = villager.reputations.toMutableMap()
+            for (member in this.members) {
+                val currentReputation =
+                    reputations[member]
+                        ?: Reputation(EnumMap(com.destroystokyo.paper.entity.villager.ReputationType::class.java))
+                currentReputation.setReputation(ReputationType.MINOR_POSITIVE, reputationAmount)
+                reputations[member] = currentReputation
+            }
+            reputations.putAll(reputations)
+            villager.reputations = reputations
+        }
+    }
+
+    private fun deactivateVillagerDiscountBoost() {
+        val world = this.beaconLocation?.world ?: return
+
+        val villagers = world.entities.mapNotNull { it as? Villager ?: return@mapNotNull null }
+            .filter { getVillagerVillageId(it) == this.id }
+        for (villager in villagers) {
+            val reputations: MutableMap<UUID, Reputation> = villager.reputations.toMutableMap()
+            for (member in this.members) {
+                val currentReputation =
+                    reputations[member]
+                        ?: Reputation(EnumMap(com.destroystokyo.paper.entity.villager.ReputationType::class.java))
+                currentReputation.setReputation(ReputationType.MINOR_POSITIVE, 0)
+                reputations[member] = currentReputation
+            }
+            reputations.putAll(reputations)
+            villager.reputations = reputations
+        }
     }
 
     fun getOnlinePlayers(): Collection<Player> {
@@ -299,4 +398,46 @@ class Village(
         this.scoreboard.sendScoreboard(player)
         player.sendMessage("Sent scoreboard")
     }
+
+    fun withdrawWealth(player: Player, amount: Double) {
+        if (amount < 1) {
+            player.sendMessage(ARGUMENT_IS_NOT_NUMBER)
+            return
+        }
+        if (this.wealth < amount) {
+            player.sendMessage(NOT_ENOUGH_WEALTH)
+            return
+        }
+        val item = getWealthItem(this, amount)
+        if (item == null) {
+            player.sendMessage(UNABLE_TO_CREATE_WEALTH_ITEM)
+            return
+        }
+        if (player.inventory.firstEmpty() == -1) {
+            player.sendMessage(INVENTORY_FULL)
+            return
+        }
+        this.wealth -= amount
+        player.inventory.addItem(item)
+        this.logger.logWealthWithdraw(player, amount)
+        this.scoreboard.updateWealth()
+    }
+
+    fun handlePlayerDeath(player: Player) {
+        this.wealth = max(0.0, this.wealth - this.config.getPlayerDeathWealthLoss())
+        this.logger.logPlayerDeath(player, this.config.getPlayerDeathWealthLoss())
+    }
+
+    fun handleVillagerDeath(villager: Villager) {
+        this.wealth = max(0.0, this.wealth - this.config.getVillagerDeathWealthLoss())
+        this.logger.logVillagerDeath(villager, this.config.getVillagerDeathWealthLoss())
+    }
+
+    fun handleVillagerCure(villager: Villager) {
+        this.wealth = max(0.0, this.wealth + this.config.getVillagerCureWealthGain())
+        this.logger.logVillagerCure(villager, this.config.getVillagerCureWealthGain())
+    }
+
 }
+
+data class VillageSpecialization(val id: String, val name: String, val multiplier: Double, val boostedMaterials: Set<Material>)

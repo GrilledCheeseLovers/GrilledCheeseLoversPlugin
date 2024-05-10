@@ -77,6 +77,9 @@ val VILLAGE_ALREADY_HAS_BEACON = MINI_MESSAGE.deserialize("<red>Your village alr
 val CANNOT_PLACE_OTHER_VILLAGE_BEACON = MINI_MESSAGE.deserialize("<red>You cannot place another village's beacon")
 val GIVEN_BEACON = MINI_MESSAGE.deserialize("<green>You now have a beacon for your village")
 
+val UPGRADE_NOT_FOUND = MINI_MESSAGE.deserialize("<red>That upgrade was not found")
+val UPGRADE_ALREADY_MAXED = MINI_MESSAGE.deserialize("<red>That upgrade already at it's highest level")
+val PURCHASED_UPGRADE = MINI_MESSAGE.deserialize("<green>Successfully purchased upgrade")
 
 val REMOVED_COORDINATES = MINI_MESSAGE.deserialize("<red>No more coordinates for you.")
 
@@ -86,10 +89,14 @@ val BOOST_DOES_NOT_EXIST = MINI_MESSAGE.deserialize("<red>That boost does not ex
 val NOT_ENOUGH_WEALTH = MINI_MESSAGE.deserialize("<red>You are too poor")
 val PURCHASED_BOOST = MINI_MESSAGE.deserialize("<green>You purchased a boost")
 val BOOST_ALREADY_ACTIVE = MINI_MESSAGE.deserialize("<red>You already have a boost of that type active")
+val ARGUMENT_IS_NOT_NUMBER = MINI_MESSAGE.deserialize("<red>That is not a valid number")
+val UNABLE_TO_CREATE_WEALTH_ITEM = MINI_MESSAGE.deserialize("<red>Could not create wealth item")
+val INVENTORY_FULL = MINI_MESSAGE.deserialize("<red>Your inventory is full")
 
 val BOOST_MENU_OPTION_ITEM_NAME = MINI_MESSAGE.deserialize("<aqua>Boost Menu")
 val MATERIAL_DEPOSIT_MENU_OPTION_ITEM_NAME = MINI_MESSAGE.deserialize("<aqua>Deposit Menu")
-
+val ACTIVE_BOOSTS_MENU_OPTION_ITEM_NAME = MINI_MESSAGE.deserialize("<aqua>Active Boosts Menu")
+val UPGRADES_MENU_OPTION_ITEM_NAME = MINI_MESSAGE.deserialize("<aqua>Upgrades Menu")
 
 const val FASTER_CROPS_DISPLAY_NAME = "<aqua>Faster Crops"
 const val POTION_EFFECT_DISPLAY_NAME = "<aqua>Potion Effects"
@@ -101,6 +108,8 @@ val VIEWING_VILLAGE_BORDER = MINI_MESSAGE.deserialize("<aqua>Now viewing your vi
 val NOT_VIEWING_VILLAGE_BORDER = MINI_MESSAGE.deserialize("<aqua>No longer viewing your village border")
 
 val MATERIAL_DEPOSIT_MENU_NAME = MINI_MESSAGE.deserialize("Deposit Materials")
+val ACTIVE_BOOSTS_MENU_NAME = MINI_MESSAGE.deserialize("Active Boosts")
+val UPGRADES_MENU_NAME = MINI_MESSAGE.deserialize("Upgrades")
 
 fun getDepositMessage(player: Player, item: ItemStack, worth: Double): Component {
     return MINI_MESSAGE.deserialize("<green>You deposited ${item.amount} of ${item.type.name.lowercase().replace('_', ' ')} worth $worth")

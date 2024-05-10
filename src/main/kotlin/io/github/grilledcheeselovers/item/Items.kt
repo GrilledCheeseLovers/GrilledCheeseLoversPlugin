@@ -6,7 +6,9 @@ import io.github.grilledcheeselovers.constant.MINI_MESSAGE
 import io.github.grilledcheeselovers.constant.getVillageBeaconName
 import io.github.grilledcheeselovers.util.setBeaconVillage
 import io.github.grilledcheeselovers.util.setBiomePotion
+import io.github.grilledcheeselovers.util.setItemWealthAmount
 import io.github.grilledcheeselovers.village.Village
+import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.block.Biome
 import org.bukkit.enchantments.Enchantment
@@ -28,6 +30,20 @@ fun getBeaconItem(village: Village): ItemStack? {
     meta.displayName(getVillageBeaconName(village.name))
     setBeaconVillage(meta, village.id)
     item.itemMeta = meta
+    return item
+}
+
+fun getWealthItem(village: Village, amount: Double): ItemStack? {
+    val item = ItemStack(Material.PAPER)
+    val meta = item.itemMeta ?: return null
+    meta.displayName(MINI_MESSAGE .deserialize("<green>Wealth Note"))
+    meta.lore(arrayListOf(
+        Component.empty(),
+        MINI_MESSAGE.deserialize("Worth: $amount"),
+        MINI_MESSAGE.deserialize("Village: ${village.name}")
+    ))
+    item.itemMeta = meta
+    setItemWealthAmount(item, amount)
     return item
 }
 

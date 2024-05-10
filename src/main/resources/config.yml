@@ -1,7 +1,12 @@
 village-radius: 32
+villager-career-change-cooldown: 1200
 
 material-values:
   DIAMOND_BLOCK: 100
+
+player-death-wealth-loss: 50
+villager-death-wealth-loss: 20
+village-cure-wealth-gain: 10
 
 wealth-item:
   material: PAPER
@@ -12,6 +17,7 @@ wealth-item:
 villages:
   "id":
     name: "<blue>Great Village"
+    specialization: "farmer"
     members:
       - "some-uuid"
 
@@ -25,3 +31,95 @@ boosts:
         potion-level: 1
         cost: 1 # todo
         duration-in-seconds: 10
+        global: false
+      2:
+        potion-type: haste
+        potion-level: 1
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: true
+  durability-boost:
+    type: INCREASED_DURABILITY
+    name: "<green>Increased Durability"
+    levels:
+      1:
+        value: 0.90
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+      2:
+        value: 0.90
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: true
+  trade-boost:
+    type: VILLAGER_DISCOUNT
+    name: "<green>Trading discount"
+    levels:
+      1:
+        value: 20
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+      2:
+        value: 100
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+  crop-speed:
+    type: FASTER_CROPS
+    name: "<green>Faster Crops"
+    levels:
+      1:
+        value: 1
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+      2:
+        value: 2
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+  no-phantoms:
+    type: NO_PHANTOMS
+    name: "<green>Disable Phantoms"
+    levels:
+      1:
+        value: 1
+        cost: 1 # todo
+        duration-in-seconds: 10
+        global: false
+
+village-specializations:
+  farmer:
+    name: "<aqua>Farmer"
+    multiplier: 1.05
+    boosted-materials:
+      - "WHEAT"
+      - "WHEAT_SEEDS"
+      - "POTATO"
+      - "BAKED_POTATO"
+      - "POISONOUS_POTATO"
+      - "BEETROOT"
+      - "BEETROOT_SEEDS"
+      - "KELP"
+      - "DRIED_KELP"
+      - "BREAD"
+      - "COOKIE"
+      - "CAKE"
+      - "PUMPKIN"
+      - "PUMPKIN_PIE"
+      - "PUMPKIN_SEEDS"
+      - "CARROT"
+      - "GOLDEN_CARROT"
+      - "MELON_SLICE"
+      - "MELON"
+      - "MELON_SEEDS"
+      - "APPLE"
+      - "GOLDEN_APPLE"
+      - "ENCHANTED_GOLDEN_APPLE"
+      - "SWEET_BERRIES"
+      - "GLOW_BERRIES"
+      - "CHORUS_FRUIT"
+      - "COCOA_BEANS"
+      - "NETHER_WART"

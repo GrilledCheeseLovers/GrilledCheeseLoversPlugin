@@ -14,6 +14,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 private const val NAME_KEY = "name"
+private const val SPECIALIZATION_KEY = "specialization"
 private const val WEALTH_KEY = "wealth"
 private const val BEACON_LOCATION_KEY = "beacon-location"
 private const val WORLD_UUID_KEY = "world-uuid"
@@ -36,12 +37,13 @@ fun loadVillagesFromJson(
     for (id in json.keySet()) {
         val villageObject = json.getAsJsonObject(id)
         val name = villageObject.get(NAME_KEY).asString
+        val specializationId = villageObject.get(SPECIALIZATION_KEY).asString
         val wealth = villageObject.get(WEALTH_KEY).asDouble
         val members = villageObject.getAsJsonArray(MEMBERS_KEY).toList().map { UUID.fromString(it.asString) }.toSet()
         val upgradeLevelsObject = villageObject.getAsJsonObject(UPGRADE_LEVELS_KEY)
         val upgradeLevels: MutableMap<String, Int> = hashMapOf()
         for (upgradeId in upgradeLevelsObject.keySet()) {
-            val level = upgradeLevelsObject.getAsJsonObject(upgradeId).asInt
+            val level = upgradeLevelsObject.get(upgradeId).asInt
             upgradeLevels[upgradeId] = level
         }
         val boosts: MutableMap<String, ActiveBoost<*>> = hashMapOf()
@@ -62,6 +64,7 @@ fun loadVillagesFromJson(
             members,
             upgradeLevels,
             boosts,
+            specializationId,
             wealth
         )
 
@@ -87,6 +90,7 @@ fun convertVillagesToJson(
     for (village in villages.values) {
         val villageObject = JsonObject()
         villageObject.addProperty(NAME_KEY, village.name)
+        villageObject.addProperty(SPECIALIZATION_KEY, village.specializationId)
         villageObject.addProperty(WEALTH_KEY, village.getWealth())
         val membersArray = JsonArray()
         for (member in village.members) {
@@ -102,13 +106,6 @@ fun convertVillagesToJson(
             beaconObject.addProperty(LOCATION_Y_KEY, beaconLocation.blockY)
             beaconObject.addProperty(LOCATION_Z_KEY, beaconLocation.blockZ)
             villageObject.add(BEACON_LOCATION_KEY, beaconObject)
-            for (i in 0..10) {
-                JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java).logger.info("Added beacon object to JSON")
-            }
-        } else {
-            for (i in 0..10) {
-                JavaPlugin.getPlugin(GrilledCheeseLoversPlugin::class.java).logger.info("Beacon is null")
-            }
         }
 
         val upgradeLevelsObject = JsonObject()

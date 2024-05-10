@@ -131,6 +131,8 @@ class PlayerListeners(
         val player = event.player
         if (player.inventory.isEmpty) return
         val world = player.world
+        val deathLocation = player.location
+        player.sendMessage(MINI_MESSAGE.deserialize("<red>You died at <gold>(${deathLocation.blockX}, ${deathLocation.blockY}, ${deathLocation.blockZ})"))
         var chestLoc = player.location
         var placed = false
         var firstChestLoc: Location? = null
