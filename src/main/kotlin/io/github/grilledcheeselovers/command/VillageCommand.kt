@@ -7,7 +7,6 @@ import io.github.grilledcheeselovers.constant.GIVEN_BEACON
 import io.github.grilledcheeselovers.constant.INVALID_COMMAND_USAGE
 import io.github.grilledcheeselovers.constant.INVENTORY_FULL
 import io.github.grilledcheeselovers.constant.MINI_MESSAGE
-import io.github.grilledcheeselovers.constant.NOT_ENOUGH_WEALTH
 import io.github.grilledcheeselovers.constant.NOT_IN_VILLAGE
 import io.github.grilledcheeselovers.constant.NOT_VIEWING_VILLAGE_BORDER
 import io.github.grilledcheeselovers.constant.UNABLE_TO_CREATE_BEACON
@@ -15,7 +14,6 @@ import io.github.grilledcheeselovers.constant.VIEWING_VILLAGE_BORDER
 import io.github.grilledcheeselovers.constant.VILLAGE_ALREADY_HAS_BEACON
 import io.github.grilledcheeselovers.extension.getVillage
 import io.github.grilledcheeselovers.item.getBeaconItem
-import io.github.grilledcheeselovers.item.getWealthItem
 import io.github.grilledcheeselovers.village.VillageManager
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -26,7 +24,7 @@ import org.bukkit.entity.Player
 private const val GET_BEACON_ARG = "getbeacon"
 private const val TOGGLE_BORDER_ARG = "toggleborder"
 private const val WITHDRAW_ARG = "withdraw"
-private const val HANDLE_RELOAD_ARG = "reload"
+private const val RELOAD_ARG = "reload"
 
 class VillageCommand(
     private val plugin: GrilledCheeseLoversPlugin,
@@ -51,7 +49,7 @@ class VillageCommand(
                     return true
                 }
 
-                HANDLE_RELOAD_ARG -> {
+                RELOAD_ARG -> {
                     if (!sender.isOp) return true
                     this.plugin.grilledCheeseConfig.reload()
                     sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reloaded successfully"))
@@ -145,7 +143,7 @@ class VillageCommand(
                 WITHDRAW_ARG
             )
             if (sender.isOp) {
-                list.add(HANDLE_RELOAD_ARG)
+                list.add(RELOAD_ARG)
             }
             return list
         }

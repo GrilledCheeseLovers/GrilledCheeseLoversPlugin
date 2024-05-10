@@ -64,9 +64,11 @@ private const val VILLAGE_SPECIALIZATION_NAME_KEY = "name"
 private const val VILLAGE_SPECIALIZATION_MULTIPLIER_KEY = "multiplier"
 private const val VILLAGE_SPECIALIZATION_BOOSTED_MATERIALS_KEY = "boosted-materials"
 
-private const val PLAYER_DEATH_WEALTH_LOSS = "player-death-wealth-loss"
-private const val VILLAGER_DEATH_WEALTH_LOSS = "villager-death-wealth-loss"
-private const val VILLAGER_CURE_WEALTH_GAIN = "villager-cure-wealth-gain"
+private const val PLAYER_DEATH_WEALTH_LOSS_KEY = "player-death-wealth-loss"
+private const val VILLAGER_DEATH_WEALTH_LOSS_KEY = "villager-death-wealth-loss"
+private const val VILLAGER_CURE_WEALTH_GAIN_KEY = "villager-cure-wealth-gain"
+
+private const val BOT_TOKEN_KEY = "bot-token"
 
 class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
 
@@ -84,6 +86,7 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
     private var villagerDeathWealthLoss: Double = 0.0
     private var villagerCureWealthGain: Double = 0.0
 
+    private var botToken: String = ""
 
     private val villageSavesPath = this.plugin.dataFolder.toPath().resolve("villages.json")
 
@@ -92,9 +95,10 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         val config = this.plugin.config
         this.villageRadius = config.getInt(VILLAGE_RADIUS_KEY)
         this.villagerCareerChangeCooldown = config.getInt(VILLAGER_CAREER_CHANGE_COOLDOWN)
-        this.playerDeathWealthLoss = config.getDouble(PLAYER_DEATH_WEALTH_LOSS)
-        this.villagerDeathWealthLoss = config.getDouble(VILLAGER_DEATH_WEALTH_LOSS)
-        this.villagerCureWealthGain = config.getDouble(VILLAGER_CURE_WEALTH_GAIN)
+        this.playerDeathWealthLoss = config.getDouble(PLAYER_DEATH_WEALTH_LOSS_KEY)
+        this.villagerDeathWealthLoss = config.getDouble(VILLAGER_DEATH_WEALTH_LOSS_KEY)
+        this.villagerCureWealthGain = config.getDouble(VILLAGER_CURE_WEALTH_GAIN_KEY)
+        this.botToken = config.getString(BOT_TOKEN_KEY, "")!!
         this.wealthItem = this.loadWealthItem(config)
         this.possibleBoosts.putAll(
             this.loadBoosts(config.getConfigurationSection(BOOSTS_KEY))
@@ -158,6 +162,10 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
 
     fun getSpecializationById(id: String): VillageSpecialization? {
         return this.specializations[id]
+    }
+
+    fun getBotToken(): String {
+        return this.botToken
     }
 
     fun getPlayerDeathWealthLoss(): Double = this.playerDeathWealthLoss

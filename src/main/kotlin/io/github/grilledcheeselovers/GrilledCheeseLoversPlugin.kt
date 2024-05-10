@@ -9,6 +9,7 @@ import io.github.grilledcheeselovers.listener.WorldListener
 import io.github.grilledcheeselovers.user.DeathScoreboard
 import io.github.grilledcheeselovers.user.UserManager
 import io.github.grilledcheeselovers.village.VillageManager
+import io.github.grilledcheeselovers.village.discord.VillageBot
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandExecutor
 import org.bukkit.event.Listener
@@ -32,16 +33,18 @@ class GrilledCheeseLoversPlugin : JavaPlugin() {
         this.saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, Runnable {
             this.grilledCheeseConfig.saveVillages()
         }, 20 * 60, 20 * 60)
+        this.setupDiscordBot()
     }
 
-    override fun onDisable() {
-        for (village in villageManager.getVillages().values) {
-            village.stop()
+    private fun setupDiscordBot() {
+        val token = this.grilledCheeseConfig.getBotToken()
+        if (token.isNotBlank()) {
+            this.logger.info("Enabling village bot")
+            VillageBot(token, this).initializeCommands()
+        } else {
+            this.logger.info("Bot token not found")
         }
-        this.userManager.stopActionBarTask()
-        this.grilledCheeseConfig.saveVillages()
     }
-
     private fun registerListeners() {
         this.registerListener(PlayerListeners(this.userManager, this.deathScoreboard))
         this.registerListener(WorldListener(this.deathScoreboard))
@@ -60,5 +63,14 @@ class GrilledCheeseLoversPlugin : JavaPlugin() {
     private fun registerCommand(commandName: String, executor: CommandExecutor) {
         this.getCommand(commandName)?.setExecutor(executor)
     }
+
+    override fun onDisable() {
+        for (village in villageManager.getVillages().values) {
+            village.stop()
+        }
+        this.userManager.stopActionBarTask()
+        this.grilledCheeseConfig.saveVillages()
+    }
+
 
 }

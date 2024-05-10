@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.9.23"
     id("xyz.jpenilla.run-paper") version "2.2.4"
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
-    id("com.github.johnrengelman.shadow") version "7.1.1"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "io.github.grilledcheeselovers"
@@ -20,6 +20,9 @@ dependencies {
     testImplementation(kotlin("test"))
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     implementation("com.github.stefvanschie.inventoryframework:IF:0.10.13")
+    implementation("net.dv8tion:JDA:5.0.0-beta.23") {
+        exclude(module = "opus-java")
+    }
 }
 
 tasks {
@@ -36,6 +39,7 @@ tasks {
         archiveFileName.set("${project.name}-${project.version}.jar")
 
         relocate("com.github.stefvanschie.inventoryframework", "io.github.grilledcheeselovers.inventoryframework")
+        relocate("net.dv8tion.jda", "io.github.grilledcheeselovers.jda")
 
         dependencies {
             exclude(dependency("org.yaml:snakeyaml"))

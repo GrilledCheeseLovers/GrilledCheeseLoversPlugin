@@ -1,6 +1,8 @@
 village-radius: 64
 villager-career-change-cooldown: 1200
 
+bot-token: ""
+
 player-death-wealth-loss: 50
 villager-death-wealth-loss: 20
 village-cure-wealth-gain: 10
@@ -11,10 +13,11 @@ wealth-item:
   lore:
     - ""
     - "<aqua>Worth: %value%"
+
 villages:
   "id":
     name: "<blue>Great Village"
-    specialization: "farmer"
+    specialization: "farming"
     members:
       - "some-uuid"
 
