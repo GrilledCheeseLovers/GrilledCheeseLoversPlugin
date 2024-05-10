@@ -6,6 +6,7 @@ import io.github.grilledcheeselovers.constant.ARGUMENT_IS_NOT_NUMBER
 import io.github.grilledcheeselovers.constant.GIVEN_BEACON
 import io.github.grilledcheeselovers.constant.INVALID_COMMAND_USAGE
 import io.github.grilledcheeselovers.constant.INVENTORY_FULL
+import io.github.grilledcheeselovers.constant.MINI_MESSAGE
 import io.github.grilledcheeselovers.constant.NOT_ENOUGH_WEALTH
 import io.github.grilledcheeselovers.constant.NOT_IN_VILLAGE
 import io.github.grilledcheeselovers.constant.NOT_VIEWING_VILLAGE_BORDER
@@ -25,6 +26,7 @@ import org.bukkit.entity.Player
 private const val GET_BEACON_ARG = "getbeacon"
 private const val TOGGLE_BORDER_ARG = "toggleborder"
 private const val WITHDRAW_ARG = "withdraw"
+private const val HANDLE_RELOAD_ARG = "reload"
 
 class VillageCommand(
     private val plugin: GrilledCheeseLoversPlugin,
@@ -47,6 +49,12 @@ class VillageCommand(
                 TOGGLE_BORDER_ARG -> {
                     this.handleBorderToggle(sender)
                     return true
+                }
+
+                HANDLE_RELOAD_ARG -> {
+                    if (!sender.isOp) return true
+                    this.plugin.grilledCheeseConfig.reload()
+                    sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reloaded successfully"))
                 }
             }
         }
@@ -131,11 +139,15 @@ class VillageCommand(
         args: Array<out String>
     ): MutableList<String> {
         if (args.size == 1) {
-            return arrayListOf(
+            val list = arrayListOf(
                 GET_BEACON_ARG,
                 TOGGLE_BORDER_ARG,
                 WITHDRAW_ARG
             )
+            if (sender.isOp) {
+                list.add(HANDLE_RELOAD_ARG)
+            }
+            return list
         }
         return arrayListOf()
     }

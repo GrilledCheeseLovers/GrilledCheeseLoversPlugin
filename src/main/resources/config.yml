@@ -1,8 +1,5 @@
-village-radius: 32
+village-radius: 64
 villager-career-change-cooldown: 1200
-
-material-values:
-  DIAMOND_BLOCK: 100
 
 player-death-wealth-loss: 50
 villager-death-wealth-loss: 20
@@ -28,43 +25,93 @@ boosts:
     levels:
       1:
         potion-type: haste
-        potion-level: 1
-        cost: 1 # todo
-        duration-in-seconds: 10
+        potion-level: 0
+        cost: 100
+        duration-in-seconds: 900
         global: false
       2:
         potion-type: haste
         potion-level: 1
-        cost: 1 # todo
-        duration-in-seconds: 10
+        cost: 500
+        duration-in-seconds: 900
+        global: false
+      3:
+        potion-type: haste
+        potion-level: 0
+        cost: 500
+        duration-in-seconds: 900
+        global: true
+      4:
+        potion-type: haste
+        potion-level: 1
+        cost: 1000
+        duration-in-seconds: 900
+        global: true
+  speed:
+    type: POTION_EFFECT
+    name: "<green>Speed"
+    levels:
+      1:
+        potion-type: speed
+        potion-level: 0
+        cost: 100
+        duration-in-seconds: 900
+        global: false
+      2:
+        potion-type: speed
+        potion-level: 1
+        cost: 500
+        duration-in-seconds: 900
+        global: false
+      3:
+        potion-type: speed
+        potion-level: 0
+        cost: 500
+        duration-in-seconds: 900
+        global: true
+      4:
+        potion-type: speed
+        potion-level: 1
+        cost: 1000
+        duration-in-seconds: 900
         global: true
   durability-boost:
     type: INCREASED_DURABILITY
-    name: "<green>Increased Durability"
+    name: "<green>Chance to not lose durability"
     levels:
       1:
-        value: 0.90
-        cost: 1 # todo
-        duration-in-seconds: 10
+        value: 0.15
+        cost: 200
+        duration-in-seconds: 1800
         global: false
       2:
-        value: 0.90
-        cost: 1 # todo
-        duration-in-seconds: 10
+        value: 0.33
+        cost: 700
+        duration-in-seconds: 1800
+        global: false
+      3:
+        value: 0.15
+        cost: 700
+        duration-in-seconds: 1800
+        global: true
+      4:
+        value: 0.33
+        cost: 1250
+        duration-in-seconds: 1800
         global: true
   trade-boost:
     type: VILLAGER_DISCOUNT
     name: "<green>Trading discount"
     levels:
       1:
-        value: 20
-        cost: 1 # todo
-        duration-in-seconds: 10
+        value: 25
+        cost: 500
+        duration-in-seconds: 600
         global: false
       2:
-        value: 100
-        cost: 1 # todo
-        duration-in-seconds: 10
+        value: 50
+        cost: 1000
+        duration-in-seconds: 600
         global: false
   crop-speed:
     type: FASTER_CROPS
@@ -72,13 +119,23 @@ boosts:
     levels:
       1:
         value: 1
-        cost: 1 # todo
-        duration-in-seconds: 10
+        cost: 500
+        duration-in-seconds: 1800
         global: false
       2:
         value: 2
-        cost: 1 # todo
-        duration-in-seconds: 10
+        cost: 1000
+        duration-in-seconds: 1800
+        global: false
+      3:
+        value: 1
+        cost: 1500
+        duration-in-seconds: 3600
+        global: false
+      4:
+        value: 2
+        cost: 2000
+        duration-in-seconds: 3600
         global: false
   no-phantoms:
     type: NO_PHANTOMS
@@ -86,14 +143,19 @@ boosts:
     levels:
       1:
         value: 1
-        cost: 1 # todo
-        duration-in-seconds: 10
+        cost: 250
+        duration-in-seconds: 1800
+        global: false
+      2:
+        value: 1
+        cost: 500
+        duration-in-seconds: 3600
         global: false
 
 village-specializations:
-  farmer:
-    name: "<aqua>Farmer"
-    multiplier: 1.05
+  farming:
+    name: "<aqua>Farming"
+    multiplier: 1.07
     boosted-materials:
       - "WHEAT"
       - "WHEAT_SEEDS"
@@ -123,3 +185,285 @@ village-specializations:
       - "CHORUS_FRUIT"
       - "COCOA_BEANS"
       - "NETHER_WART"
+      - "EGG"
+      - "BEEF"
+      - "COOKED_BEEF"
+      - "PORKCHOP"
+      - "COOKED_PORKCHOP"
+      - "MUTTON"
+      - "COOKED_MUTTON"
+      - "CHICKEN"
+      - "COOKED_CHICKEN"
+      - "RABBIT"
+      - "COOKED_RABBIT"
+  mining:
+    name: "<aqua>Mining"
+    multiplier: 1.03
+    boosted-materials:
+      - "COBBLESTONE"
+      - "STONE"
+      - "SMOOTH_STONE"
+      - "GRANITE"
+      - "DIORITE"
+      - "ANDESITE"
+      - "DEEPSLATE"
+      - "COBBLED_DEEPSLATE"
+      - "AMETHYST_BLOCK"
+      - "AMETHYST_SHARD"
+      - "COAL"
+      - "COPPER_INGOT"
+      - "IRON_INGOT"
+      - "GOLD_INGOT"
+      - "NETHERITE_INGOT"
+      - "LAPIS_LAZULI"
+      - "REDSTONE"
+      - "EMERALD"
+      - "DIAMOND"
+  fishing:
+    name: "<aqua>Fishing"
+    multiplier: 1.10
+    boosted-materials:
+      - "COD"
+      - "COOKED_COD"
+      - "SALMON"
+      - "COOKED_SALMON"
+      - "TROPICAL_FISH"
+      - "PUFFERFISH"
+      - "PRISMARINE_CRYSTALS"
+      - "PRISMARINE_SHARD"
+      - "PRISMARINE"
+      - "DARK_PRISMARINE"
+      - "NAUTILUS_SHELL"
+      - "NAME_TAG"
+      - "SADDLE"
+      - "LILY_PAD"
+      - "LEATHER"
+      - "INK_SAC"
+      - "GLOW_INK_SAC"
+  hunting:
+    name: "<aqua>Hunting"
+    multiplier: 1.05
+    boosted-materials:
+      - "ROTTEN_FLESH"
+      - "GUNPOWDER"
+      - "STRING"
+      - "BONE"
+      - "ARROW"
+      - "SPIDER_EYE"
+      - "ENDER_PEARL"
+      - "GHAST_TEAR"
+      - "BLAZE_ROD"
+      - "MAGMA_CREAM"
+      - "SLIME_BALL"
+      - "LEATHER"
+      - "GOLD_NUGGET"
+      - "GOLD_INGOT"
+      - "PHANTOM_MEMBRANE"
+      - "NETHER_STAR"
+      - "GLOWSTONE_DUST"
+      - "BEEF"
+      - "COOKED_BEEF"
+      - "PORKCHOP"
+      - "COOKED_PORKCHOP"
+      - "MUTTON"
+      - "COOKED_MUTTON"
+      - "CHICKEN"
+      - "COOKED_CHICKEN"
+      - "RABBIT"
+      - "COOKED_RABBIT"
+      - "WOOL"
+      - "RABBIT_FOOT"
+  woodcutting:
+    name: "<aqua>Woodcutting"
+    multiplier: 1.08
+    boosted-materials:
+      - "OAK_LOG"
+      - "STRIPPED_OAK_LOG"
+      - "OAK_LEAVES"
+      - "SPRUCE_LOG"
+      - "STRIPPED_SPRUCE_LOG"
+      - "SPRUCE_LEAVES"
+      - "BIRCH_LOG"
+      - "STRIPPED_BIRCH_LOG"
+      - "BIRCH_LEAVES"
+      - "JUNGLE_LOG"
+      - "STRIPPED_JUNGLE_LOG"
+      - "JUNGLE_LEAVES"
+      - "ACACIA_LOG"
+      - "STRIPPED_ACACIA_LOG"
+      - "ACACIA_LEAVES"
+      - "DARK_OAK_LOG"
+      - "STRIPPED_DARK_OAK_LOG"
+      - "DARK_OAK_LEAVES"
+      - "MANGROVE_LOG"
+      - "STRIPPED_MANGROVE_LOG"
+      - "MANGROVE_LEAVES"
+      - "CHERRY_LOG"
+      - "STRIPPED_CHERRY_LOG"
+      - "CHERRY_LEAVES"
+      - "CRIMSON_HYPHAE"
+      - "STRIPPED_CRIMSON_HYPHAE"
+      - "WARPED_HYPHAE"
+      - "STRIPPED_WARPED_HYPHAE"
+
+material-values:
+  # MISC
+  PODZOL: 1
+  MYCELIUM: 1
+  GRAVEL: 1
+  ICE: 1
+  PACKED_ICE: 2
+  BLUE_ICE: 5
+  GOLDEN_APPLE: 16
+  ENCHANTED_GOLDEN_APPLE: 75
+  DANDELION: 1.5
+  POPPY: 1.5
+  BLUE_ORCHID: 1.5
+  ALLIUM: 1.5
+  AZURE_BLUET: 1.5
+  RED_TULIP: 1.5
+  ORANGE_TULIP: 1.5
+  WHITE_TULIP: 1.5
+  PINK_TULIP: 1.5
+  OXEYE_DAISY: 1.5
+  CORNFLOWER: 1.5
+  LILY_OF_THE_VALLEY: 1.5
+  TORCHFLOWER: 1.5
+  WITHER_ROSE: 2.5
+  HONEY_BLOCK: 2
+
+
+  # MINING
+  STONE: 0.015625
+  GRANITE: 0.03125
+  DIORITE: 0.03125
+  ANDESITE: 0.03125
+  DEEPSLATE: 0.03125
+  COBBLED_DEEPSLATE: 0.03125
+  COBBLESTONE: 0.015625
+  AMETHYST_BLOCK: 1
+  SMOOTH_STONE: 0.03125
+  REDSTONE: 0.2
+  COAL: 0.5
+  DIAMOND: 10
+  EMERALD: 0.5
+  LAPIS_LAZULI: 0.3
+  AMETHYST_SHARD: 0.5
+  IRON_INGOT: 1
+  COPPER_INGOT: 0.8
+  GOLD_INGOT: 0.5
+  NETHERITE_INGOT: 15
+
+  # WOODCUTTING
+  OAK_LOG: 2
+  SPRUCE_LOG: 2
+  BIRCH_LOG: 2
+  JUNGLE_LOG: 2
+  ACACIA_LOG: 2
+  CHERRY_LOG: 2
+  DARK_OAK_LOG: 2
+  MANGROVE_LOG: 2
+  STRIPPED_OAK_LOG: 3
+  STRIPPED_SPRUCE_LOG: 3
+  STRIPPED_BIRCH_LOG: 3
+  STRIPPED_JUNGLE_LOG: 3
+  STRIPPED_ACACIA_LOG: 3
+  STRIPPED_CHERRY_LOG: 3
+  STRIPPED_DARK_OAK_LOG: 3
+  STRIPPED_MANGROVE_LOG: 3
+  STRIPPED_CRIMSON_HYPHAE: 3
+  STRIPPED_WARPED_HYPHAE: 4
+  CRIMSON_HYPHAE: 3
+  WARPED_HYPHAE: 4
+  OAK_LEAVES: 0.01
+  SPRUCE_LEAVES: 0.01
+  BIRCH_LEAVES: 0.01
+  JUNGLE_LEAVES: 0.01
+  ACACIA_LEAVES: 0.01
+  CHERRY_LEAVES: 0.01
+  DARK_OAK_LEAVES: 0.01
+  MANGROVE_LEAVES: 0.01
+  APPLE: 8
+
+  # FARMING
+  KELP: 0.1
+  PUMPKIN: 5
+  MELON: 5
+  WHEAT_SEEDS: 0.1
+  WHEAT: 0.5
+  BREAD: 2
+  EGG: 0.01
+  COCOA_BEANS: 0.5
+  CAKE: 5
+  COOKIE: 3
+  MELON_SLICE: 1
+  DRIED_KELP: 0.3
+  PUMPKIN_SEEDS: 0.1
+  MELON_SEEDS: 0.1
+  NETHER_WART: 2
+  CARROT: 0.5
+  POTATO: 0.5
+  BAKED_POTATO: 0.75
+  POISONOUS_POTATO: 3
+  GOLDEN_CARROT: 3
+  PUMPKIN_PIE: 4
+  CHORUS_FRUIT: 0.5
+  BEETROOT: 0.5
+  BEETROOT_SEEDS: 0.1
+  SWEET_BERRIES: 0.5
+  GLOW_BERRIES: 1
+  BROWN_MUSHROOM: 0.3
+  RED_MUSHROOM: 0.3
+  SUGAR_CANE: 0.3
+  BAMBOO: 0.1
+  CACTUS: 0.3
+  RABBIT_FOOT: 2
+  WOOL: 2
+  BEEF: 2
+  COOKED_BEEF: 3
+  PORKCHOP: 2
+  COOKED_PORKCHOP: 3
+  MUTTON: 2
+  COOKED_MUTTON: 3
+  CHICKEN: 2
+  COOKED_CHICKEN: 3
+  RABBIT: 3
+  COOKED_RABBIT: 4
+
+
+  # FISHING
+  LILY_PAD: 2
+  PRISMARINE: 3
+  DARK_PRISMARINE: 4
+  SADDLE: 8
+  ARROW: 2
+  COD: 2
+  SALMON: 3
+  TROPICAL_FISH: 3
+  PUFFERFISH: 5
+  COOKED_COD: 3
+  COOKED_SALMON: 4
+  INK_SAC: 1
+  GLOW_INK_SAC: 2
+  PRISMARINE_SHARD: 0.75
+  PRISMARINE_CRYSTALS: 0.75
+  NAME_TAG: 2
+  NAUTILUS_SHELL: 2
+
+
+  # HUNTING
+  STRING: 1
+  GUNPOWDER: 1
+  LEATHER: 2
+  SLIME_BALL: 1
+  GLOWSTONE_DUST: 0.1
+  BONE: 1
+  ROTTEN_FLESH: 1
+  ENDER_PEARL: 3
+  BLAZE_ROD: 5
+  GHAST_TEAR: 10
+  GOLD_NUGGET: 0.1
+  SPIDER_EYE: 3
+  MAGMA_CREAM: 2
+  NETHER_STAR: 50
+  PHANTOM_MEMBRANE: 1

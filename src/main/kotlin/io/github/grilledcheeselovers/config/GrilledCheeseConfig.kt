@@ -111,6 +111,17 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         )
     }
 
+    fun reload() {
+        this.saveVillages()
+        this.plugin.villageManager.clearVillages()
+        this.possibleBoosts.clear()
+        this.boostsById.clear()
+        this.materialValues.clear()
+        this.specializations.clear()
+        this.upgrades.clear()
+        this.load()
+    }
+
     fun getVillageRadius(): Int {
         return this.villageRadius
     }

@@ -77,7 +77,8 @@ class Village(
             player.sendMessage(NOT_ENOUGH_WEALTH)
             return false
         }
-        if (this.activeBoosts[boost.id] != null) {
+        val currentActiveBoost = this.activeBoosts[boost.id]
+        if (currentActiveBoost != null && currentActiveBoost.level <= level) {
             player.sendMessage(BOOST_ALREADY_ACTIVE)
             return false
         }

@@ -18,4 +18,8 @@ class VillageManager(
         return Collections.unmodifiableMap(this.villages)
     }
 
+    fun clearVillages() {
+        this.villages.clear()
+    }
+
 }

@@ -13,9 +13,9 @@ data object VillageRadiusUpgrade : Upgrade<Int>(
     "village_radius",
     "<aqua>Village Radius",
     UpgradeType.IntUpgrade,
-    Int.MAX_VALUE,
-    { level -> level * 5.0 }, // todo
-    { level -> level } // todo
+    20,
+    { level -> 100.0 * level },
+    { level -> level * 5 }
 )
 
 sealed class UpgradeType<T> {

@@ -36,6 +36,7 @@ import org.bukkit.inventory.ItemStack
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.function.Consumer
+import kotlin.time.toJavaDuration
 
 private const val MAIN_MENU_ROWS = 6
 private const val MAIN_MENU_OPTIONS_START_X = 1
@@ -245,6 +246,7 @@ private fun createBoostLevelItem(
     val lore = mutableListOf(
         Component.empty(),
         MINI_MESSAGE.deserialize("global: ${if (levelData.global) "<green>true" else "<red>false"}"),
+        MINI_MESSAGE.deserialize("Duration: ${formatDuration(levelData.duration.toJavaDuration())}"),
         MINI_MESSAGE.deserialize("<aqua>Level: $level"),
         MINI_MESSAGE.deserialize("<aqua>Price: ${levelData.cost}")
     )
