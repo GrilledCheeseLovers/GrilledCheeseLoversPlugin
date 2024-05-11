@@ -90,7 +90,7 @@ fun convertVillagesToJson(
     for (village in villages.values) {
         val villageObject = JsonObject()
         villageObject.addProperty(NAME_KEY, village.name)
-        villageObject.addProperty(SPECIALIZATION_KEY, village.specializationId)
+        villageObject.addProperty(SPECIALIZATION_KEY, village.getSpecialization())
         villageObject.addProperty(WEALTH_KEY, village.getWealth())
         val membersArray = JsonArray()
         for (member in village.members) {

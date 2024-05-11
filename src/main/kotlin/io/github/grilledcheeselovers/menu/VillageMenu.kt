@@ -266,7 +266,7 @@ private fun openMaterialDepositMenu(
 ) {
     val gui = ChestGui(DEPOSIT_MATERIALS_MENU_ROWS, ComponentHolder.of(MATERIAL_DEPOSIT_MENU_NAME))
     val village = player.getVillage(plugin.villageManager) ?: return
-    val specialization = plugin.grilledCheeseConfig.getSpecializationById(village.specializationId)
+    val specialization = plugin.grilledCheeseConfig.getSpecializationById(village.getSpecialization())
     gui.setOnClose { event ->
         val inventory = event.view.topInventory
         for (item in inventory) {

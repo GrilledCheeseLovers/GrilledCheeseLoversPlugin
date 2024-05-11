@@ -51,13 +51,13 @@ class Village(
     val members: Set<UUID>,
     private val upgradeLevels: MutableMap<String, Int>,
     private val activeBoosts: MutableMap<String, ActiveBoost<*>>,
-    val specializationId: String,
+    private var specializationId: String,
     private var wealth: Double = 0.0
 ) {
 
     private val logger = VillageLogger(this.plugin, this)
     private val scoreboard = run {
-        val scoreboard = VillageScoreboard(this)
+        val scoreboard = VillageScoreboard(this.config, this)
         scoreboard.initialize()
         return@run scoreboard
     }
@@ -89,6 +89,15 @@ class Village(
         this.logger.logBoostPurchase(player, boost, level)
         this.scoreboard.updateWealth()
         return true
+    }
+
+    fun setSpecialization(id: String) {
+        this.specializationId = id
+        this.scoreboard.updateSpecialization()
+    }
+
+    fun getSpecialization(): String {
+        return this.specializationId
     }
 
     fun attemptPurchaseUpgrade(player: Player, upgradeId: String) {
@@ -397,7 +406,6 @@ class Village(
 
     fun sendScoreboard(player: Player) {
         this.scoreboard.sendScoreboard(player)
-        player.sendMessage("Sent scoreboard")
     }
 
     fun withdrawWealth(player: Player, amount: Double) {
@@ -427,16 +435,19 @@ class Village(
     fun handlePlayerDeath(player: Player) {
         this.wealth = max(0.0, this.wealth - this.config.getPlayerDeathWealthLoss())
         this.logger.logPlayerDeath(player, this.config.getPlayerDeathWealthLoss())
+        this.scoreboard.updateWealth()
     }
 
     fun handleVillagerDeath(villager: Villager) {
         this.wealth = max(0.0, this.wealth - this.config.getVillagerDeathWealthLoss())
         this.logger.logVillagerDeath(villager, this.config.getVillagerDeathWealthLoss())
+        this.scoreboard.updateWealth()
     }
 
     fun handleVillagerCure(villager: Villager) {
         this.wealth = max(0.0, this.wealth + this.config.getVillagerCureWealthGain())
         this.logger.logVillagerCure(villager, this.config.getVillagerCureWealthGain())
+        this.scoreboard.updateWealth()
     }
 
 }

@@ -24,7 +24,10 @@ import org.bukkit.entity.Player
 private const val GET_BEACON_ARG = "getbeacon"
 private const val TOGGLE_BORDER_ARG = "toggleborder"
 private const val WITHDRAW_ARG = "withdraw"
+private const val SET_SPECIALIZATION_ARG = "setspecialization"
 private const val RELOAD_ARG = "reload"
+
+private const val NONE_SPECIALIZATION_ID = "none"
 
 class VillageCommand(
     private val plugin: GrilledCheeseLoversPlugin,
@@ -53,6 +56,7 @@ class VillageCommand(
                     if (!sender.isOp) return true
                     this.plugin.grilledCheeseConfig.reload()
                     sender.sendMessage(MINI_MESSAGE.deserialize("<green>Reloaded successfully"))
+                    return true
                 }
             }
         }
@@ -60,6 +64,11 @@ class VillageCommand(
             when (args[0]) {
                 WITHDRAW_ARG -> {
                     this.handleWithdraw(sender, args[1])
+                    return true
+                }
+
+                SET_SPECIALIZATION_ARG -> {
+                    this.handleSetProfession(sender, args[1])
                     return true
                 }
             }
@@ -130,6 +139,25 @@ class VillageCommand(
         }
     }
 
+    private fun handleSetProfession(player: Player, specializationArg: String) {
+        val village = player.getVillage(this.villageManager)
+        if (village == null) {
+            player.sendMessage(NOT_IN_VILLAGE)
+            return
+        }
+        if (village.getSpecialization() != NONE_SPECIALIZATION_ID) {
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>You already have a specialization"))
+            return
+        }
+        val specialization = this.plugin.grilledCheeseConfig.getSpecializationById(specializationArg)
+        if (specialization == null) {
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>That is not a valid specialization."))
+            return
+        }
+        village.setSpecialization(specializationArg)
+        player.sendMessage(MINI_MESSAGE.deserialize("<green>Your specialization is now $specializationArg"))
+    }
+
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
@@ -140,12 +168,17 @@ class VillageCommand(
             val list = arrayListOf(
                 GET_BEACON_ARG,
                 TOGGLE_BORDER_ARG,
-                WITHDRAW_ARG
+                WITHDRAW_ARG,
+                SET_SPECIALIZATION_ARG
             )
             if (sender.isOp) {
                 list.add(RELOAD_ARG)
             }
             return list
+        }
+        if (args.size == 2 && args[0] == SET_SPECIALIZATION_ARG) {
+            return this.plugin.grilledCheeseConfig.getSpecializationsIds().filter { it.startsWith(args[1]) }
+                .toMutableList()
         }
         return arrayListOf()
     }

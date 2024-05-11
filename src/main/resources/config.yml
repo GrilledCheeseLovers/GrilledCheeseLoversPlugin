@@ -7,6 +7,8 @@ player-death-wealth-loss: 50
 villager-death-wealth-loss: 20
 village-cure-wealth-gain: 10
 
+village-distance-requirement: 600
+
 wealth-item:
   material: PAPER
   name: "<green>Wealth"
@@ -156,6 +158,9 @@ boosts:
         global: false
 
 village-specializations:
+  none:
+    name: "none"
+    multiplier: 1.0
   farming:
     name: "<aqua>Farming"
     multiplier: 1.07
@@ -358,26 +363,26 @@ material-values:
   NETHERITE_INGOT: 15
 
   # WOODCUTTING
-  OAK_LOG: 2
-  SPRUCE_LOG: 2
-  BIRCH_LOG: 2
-  JUNGLE_LOG: 2
-  ACACIA_LOG: 2
-  CHERRY_LOG: 2
-  DARK_OAK_LOG: 2
-  MANGROVE_LOG: 2
-  STRIPPED_OAK_LOG: 3
-  STRIPPED_SPRUCE_LOG: 3
-  STRIPPED_BIRCH_LOG: 3
-  STRIPPED_JUNGLE_LOG: 3
-  STRIPPED_ACACIA_LOG: 3
-  STRIPPED_CHERRY_LOG: 3
-  STRIPPED_DARK_OAK_LOG: 3
-  STRIPPED_MANGROVE_LOG: 3
-  STRIPPED_CRIMSON_HYPHAE: 3
-  STRIPPED_WARPED_HYPHAE: 4
-  CRIMSON_HYPHAE: 3
-  WARPED_HYPHAE: 4
+  OAK_LOG: 1.5
+  SPRUCE_LOG: 1.5
+  BIRCH_LOG: 1.5
+  JUNGLE_LOG: 1.5
+  ACACIA_LOG: 1.5
+  CHERRY_LOG: 1.5
+  DARK_OAK_LOG: 1.5
+  MANGROVE_LOG: 1.5
+  STRIPPED_OAK_LOG: 2
+  STRIPPED_SPRUCE_LOG: 2
+  STRIPPED_BIRCH_LOG: 2
+  STRIPPED_JUNGLE_LOG: 2
+  STRIPPED_ACACIA_LOG: 2
+  STRIPPED_CHERRY_LOG: 2
+  STRIPPED_DARK_OAK_LOG: 2
+  STRIPPED_MANGROVE_LOG: 2
+  STRIPPED_CRIMSON_HYPHAE: 2
+  STRIPPED_WARPED_HYPHAE: 2.5
+  CRIMSON_HYPHAE: 2
+  WARPED_HYPHAE: 2.5
   OAK_LEAVES: 0.01
   SPRUCE_LEAVES: 0.01
   BIRCH_LEAVES: 0.01
@@ -398,8 +403,8 @@ material-values:
   EGG: 0.01
   COCOA_BEANS: 0.5
   CAKE: 5
-  COOKIE: 3
-  MELON_SLICE: 1
+  COOKIE: 1.6
+  MELON_SLICE: 0.3
   DRIED_KELP: 0.3
   PUMPKIN_SEEDS: 0.1
   MELON_SEEDS: 0.1

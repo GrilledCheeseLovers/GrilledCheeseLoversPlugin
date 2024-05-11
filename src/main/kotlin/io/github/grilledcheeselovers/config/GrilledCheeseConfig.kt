@@ -68,6 +68,8 @@ private const val PLAYER_DEATH_WEALTH_LOSS_KEY = "player-death-wealth-loss"
 private const val VILLAGER_DEATH_WEALTH_LOSS_KEY = "villager-death-wealth-loss"
 private const val VILLAGER_CURE_WEALTH_GAIN_KEY = "villager-cure-wealth-gain"
 
+private const val VILLAGE_DISTANCE_REQUIREMENT_KEY = "village-distance-requirement"
+
 private const val BOT_TOKEN_KEY = "bot-token"
 
 class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
@@ -86,6 +88,8 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
     private var villagerDeathWealthLoss: Double = 0.0
     private var villagerCureWealthGain: Double = 0.0
 
+    private var villageDistanceRequirement: Int = 0
+
     private var botToken: String = ""
 
     private val villageSavesPath = this.plugin.dataFolder.toPath().resolve("villages.json")
@@ -100,6 +104,7 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         this.villagerCureWealthGain = config.getDouble(VILLAGER_CURE_WEALTH_GAIN_KEY)
         this.botToken = config.getString(BOT_TOKEN_KEY, "")!!
         this.wealthItem = this.loadWealthItem(config)
+        this.villageDistanceRequirement = config.getInt(VILLAGE_DISTANCE_REQUIREMENT_KEY, 600)
         this.possibleBoosts.putAll(
             this.loadBoosts(config.getConfigurationSection(BOOSTS_KEY))
         )
@@ -124,6 +129,11 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         this.specializations.clear()
         this.upgrades.clear()
         this.load()
+        this.plugin.villageManager.getVillages().values.forEach {
+            for (player in it.getOnlinePlayers()) {
+                it.sendScoreboard(player)
+            }
+        }
     }
 
     fun getVillageRadius(): Int {
@@ -164,6 +174,14 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
         return this.specializations[id]
     }
 
+    fun getSpecializationsIds(): Collection<String> {
+        return this.specializations.keys
+    }
+
+    fun getVillageDistanceRequirement(): Int {
+        return this.villageDistanceRequirement
+    }
+
     fun getBotToken(): String {
         return this.botToken
     }
@@ -188,8 +206,7 @@ class GrilledCheeseConfig(private val plugin: GrilledCheeseLoversPlugin) {
                     idSection.getStringList(VILLAGE_MEMBERS_KEY).map { UUID.fromString(it) }
                         .toSet()
                 val name = idSection.getString(VILLAGE_NAME_KEY) ?: id
-                val specializationId = idSection.getString(VILLAGE_SPECIALIZATION_ID_KEY)
-                    ?: throw IllegalArgumentException("$VILLAGE_SPECIALIZATION_ID_KEY is required")
+                val specializationId = idSection.getString(VILLAGE_SPECIALIZATION_ID_KEY, "none")!!
                 val village = Village(
                     id,
                     name,

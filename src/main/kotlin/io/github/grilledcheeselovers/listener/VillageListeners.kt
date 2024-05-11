@@ -3,6 +3,7 @@ package io.github.grilledcheeselovers.listener
 import io.github.grilledcheeselovers.GrilledCheeseLoversPlugin
 import io.github.grilledcheeselovers.config.GrilledCheeseConfig
 import io.github.grilledcheeselovers.constant.CANNOT_PLACE_OTHER_VILLAGE_BEACON
+import io.github.grilledcheeselovers.constant.MINI_MESSAGE
 import io.github.grilledcheeselovers.constant.VILLAGE_ALREADY_HAS_BEACON
 import io.github.grilledcheeselovers.constant.getPlacedBeaconMessage
 import io.github.grilledcheeselovers.extension.getVillage
@@ -133,8 +134,27 @@ class VillageListeners(
             return
         }
         val block = event.block
+        val blockLocation = block.location
+
+        val spawn = event.block.world.spawnLocation
+        val distance = spawn.distance(blockLocation)
+        if (distance < this.config.getVillageDistanceRequirement()) {
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>You are too close to spawn ($distance blocks)"))
+            event.isCancelled = true
+            return
+        }
+        for (otherVillage in this.villageManager.getVillages().values) {
+            if (otherVillage.id == villageId) continue
+            val beaconLoc = otherVillage.getBeaconLocation() ?: continue
+            val beaconDist = beaconLoc.distance(blockLocation)
+            if (beaconDist > this.config.getVillageDistanceRequirement()) continue
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>You are too close to another village ($distance blocks)"))
+            event.isCancelled = true
+            return
+        }
+
         for (member in village.getOnlinePlayers()) {
-            player.sendMessage(getPlacedBeaconMessage(block))
+            member.sendMessage(getPlacedBeaconMessage(block))
         }
         village.setBeacon(block.location)
         val beacon = block.state as Beacon
