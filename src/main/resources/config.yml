@@ -391,7 +391,7 @@ material-values:
   CHERRY_LEAVES: 0.01
   DARK_OAK_LEAVES: 0.01
   MANGROVE_LEAVES: 0.01
-  APPLE: 8
+  APPLE: 2
 
   # FARMING
   KELP: 0.1
