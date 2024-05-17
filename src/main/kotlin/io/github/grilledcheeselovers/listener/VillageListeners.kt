@@ -289,15 +289,12 @@ class VillageListeners(
     private fun handleInfection(event: EntityTransformEvent) {
         val original = event.transformedEntity as? Villager ?: return
         val villageId = getVillagerVillageId(original) ?: return
-        var villager: Villager? = null
         for (entity in event.transformedEntities) {
-            val living = entity as? Villager ?: continue
+            val living = entity as? ZombieVillager ?: continue
             setVillagerVillageId(living, villageId)
-            villager = living
         }
-        if (villager == null) return
         val village = this.villageManager.getVillage(villageId) ?: return
-        village.handleVillagerDeath(villager)
+        village.handleVillagerDeath(original)
     }
 
     private fun handleCure(event: EntityTransformEvent) {
