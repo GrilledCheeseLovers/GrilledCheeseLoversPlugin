@@ -207,6 +207,12 @@ class VillageListeners(
     private fun removeExtraVillagers(allEntities: Collection<Entity>) {
         val entities = allEntities.filter { entity ->
             if (entity !is Villager) return@filter false
+            for (village in villageManager.getVillages().values) {
+                if (village.inRadius(entity.location)) {
+                    setVillagerVillageId(entity, village.id)
+                }
+            }
+            if (entity.villagerLevel > 1) return@filter false
             return@filter !isVillageVillager(entity)
         }
         for (villager in entities) {
