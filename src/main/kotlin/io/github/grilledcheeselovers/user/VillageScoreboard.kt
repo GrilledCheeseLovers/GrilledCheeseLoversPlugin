@@ -27,6 +27,7 @@ class VillageScoreboard(
     private lateinit var specializationTeam: Team
 
     private fun createScoreboard() {
+        if (Bukkit.getScoreboardManager() == null) return
         this.scoreboard = Bukkit.getScoreboardManager().newScoreboard
         this.boardObjective = this.scoreboard.registerNewObjective(VILLAGE_NAME_KEY, Criteria.DUMMY, MINI_MESSAGE.deserialize(village.name))
         this.boardObjective.displaySlot = DisplaySlot.SIDEBAR

@@ -58,7 +58,6 @@ class Village(
     private val logger = VillageLogger(this.plugin, this)
     private val scoreboard = run {
         val scoreboard = VillageScoreboard(this.config, this)
-        scoreboard.initialize()
         return@run scoreboard
     }
 
@@ -405,6 +404,7 @@ class Village(
     fun getWealth(): Double = this.wealth
 
     fun sendScoreboard(player: Player) {
+        this.scoreboard.initialize()
         this.scoreboard.sendScoreboard(player)
     }
 

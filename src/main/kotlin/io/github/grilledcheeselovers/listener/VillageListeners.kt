@@ -49,6 +49,7 @@ import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.world.ChunkLoadEvent
+import org.bukkit.event.world.WorldInitEvent
 import org.bukkit.event.world.WorldLoadEvent
 import org.bukkit.inventory.meta.Damageable
 import java.time.Duration
@@ -198,6 +199,8 @@ class VillageListeners(
     private fun onChunkLoad(event: ChunkLoadEvent) {
         removeExtraVillagers(event.chunk.entities.toList())
     }
+
+    private var loaded: Boolean = false
 
     @EventHandler
     private fun onWorldLoad(event: WorldLoadEvent) {

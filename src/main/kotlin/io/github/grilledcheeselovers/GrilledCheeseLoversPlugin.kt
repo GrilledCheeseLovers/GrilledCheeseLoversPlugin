@@ -49,7 +49,7 @@ class GrilledCheeseLoversPlugin : JavaPlugin() {
     }
     private fun registerListeners() {
         this.registerListener(PlayerListeners(this.userManager, this.deathScoreboard))
-        this.registerListener(WorldListener(this.deathScoreboard))
+//        this.registerListener(WorldListener(this.deathScoreboard))
         this.registerListener(VillageListeners(this))
     }
 

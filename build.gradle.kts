@@ -68,7 +68,7 @@ bukkit {
 
     apiVersion = "1.17"
 
-    load = BukkitPluginDescription.PluginLoadOrder.STARTUP
+    load = BukkitPluginDescription.PluginLoadOrder.POSTWORLD
     prefix = "GrilledCheeseLovers"
 
     commands {

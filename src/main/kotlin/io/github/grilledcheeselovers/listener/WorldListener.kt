@@ -6,12 +6,12 @@ import org.bukkit.event.Listener
 import org.bukkit.event.world.WorldLoadEvent
 
 class WorldListener(
-    private val scoreboard: DeathScoreboard
+//    private val scoreboard: DeathScoreboard
 ): Listener {
 
-    @EventHandler
-    fun onWorldLoad(event: WorldLoadEvent) {
-        this.scoreboard.initialize()
-    }
+//    @EventHandler
+//    fun onWorldLoad(event: WorldLoadEvent) {
+//        this.scoreboard.initialize()
+//    }
 
 }

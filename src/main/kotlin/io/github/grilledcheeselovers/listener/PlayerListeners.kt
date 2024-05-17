@@ -215,34 +215,34 @@ class PlayerListeners(
         }
     }
 
-    @EventHandler
-    private fun onWanderingTraderSpawn(event: EntitySpawnEvent) {
-        val entity = event.entity as? WanderingTrader ?: return
-        val recipes = entity.recipes.toMutableList()
-        recipes.addAll(getWanderingTraderTrades())
-        entity.recipes = recipes
-    }
-
-    @EventHandler
-    private fun onPotionLand(event: PotionSplashEvent) {
-        val potion = event.potion
-        val item = potion.item
-        val biome = getPotionBiome(item.itemMeta ?: return) ?: return
-        val location = event.hitBlock ?: return
-        val randomRadius = (3..5).random()
-        val usedBlocks: MutableSet<Pair<Int, Int>> = mutableSetOf()
-        for (radius in (0..randomRadius)) {
-            for (angle in (0 until 360)) {
-                val x = (location.x + cos(angle.toDouble()) * radius).toInt()
-                val z = (location.z + sin(angle.toDouble()) * radius).toInt()
-                if (!usedBlocks.add(Pair(x, z))) continue
-                for (y in (-radius)..radius) {
-                    val newLoc = Location(location.world, x.toDouble(), location.y + y.toDouble(), z.toDouble())
-                    newLoc.block.biome = biome
-                }
-            }
-        }
-    }
+//    @EventHandler
+//    private fun onWanderingTraderSpawn(event: EntitySpawnEvent) {
+//        val entity = event.entity as? WanderingTrader ?: return
+//        val recipes = entity.recipes.toMutableList()
+//        recipes.addAll(getWanderingTraderTrades())
+//        entity.recipes = recipes
+//    }
+//
+//    @EventHandler
+//    private fun onPotionLand(event: PotionSplashEvent) {
+//        val potion = event.potion
+//        val item = potion.item
+//        val biome = getPotionBiome(item.itemMeta ?: return) ?: return
+//        val location = event.hitBlock ?: return
+//        val randomRadius = (3..5).random()
+//        val usedBlocks: MutableSet<Pair<Int, Int>> = mutableSetOf()
+//        for (radius in (0..randomRadius)) {
+//            for (angle in (0 until 360)) {
+//                val x = (location.x + cos(angle.toDouble()) * radius).toInt()
+//                val z = (location.z + sin(angle.toDouble()) * radius).toInt()
+//                if (!usedBlocks.add(Pair(x, z))) continue
+//                for (y in (-radius)..radius) {
+//                    val newLoc = Location(location.world, x.toDouble(), location.y + y.toDouble(), z.toDouble())
+//                    newLoc.block.biome = biome
+//                }
+//            }
+//        }
+//    }
 
     @EventHandler
     private fun onPlayerMove(event: PlayerMoveEvent) {
