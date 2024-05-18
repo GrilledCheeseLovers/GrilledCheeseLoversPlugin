@@ -149,7 +149,7 @@ class VillageListeners(
             val beaconLoc = otherVillage.getBeaconLocation() ?: continue
             val beaconDist = beaconLoc.distance(blockLocation)
             if (beaconDist > this.config.getVillageDistanceRequirement()) continue
-            player.sendMessage(MINI_MESSAGE.deserialize("<red>You are too close to another village ($distance blocks)"))
+            player.sendMessage(MINI_MESSAGE.deserialize("<red>You are too close to another village ($beaconDist blocks)"))
             event.isCancelled = true
             return
         }
